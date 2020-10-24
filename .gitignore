@@ -128,7 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 *.csv
-/catboost_info
+*/catboost_info
 .DS_Store
 
 .idea/
