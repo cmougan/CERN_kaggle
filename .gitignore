@@ -130,3 +130,6 @@ dmypy.json
 *.csv
 /catboost_info
 .DS_Store
+
+.idea/
+data/
