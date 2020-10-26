@@ -17,6 +17,10 @@ summarise_signal <- function(df, ...){
   
 }
 
+
+train$B_PT_x <- train$B_PT * train$B_DIRA_OWNPV
+train$B_PT_y <- train$B_PT * sqrt(1 - train$B_DIRA_OWNPV**2)
+
 train %>% summarise_signal()
 
 train %>% group_by(Kplus_P > 5e4) %>% summarise_signal()
@@ -32,4 +36,7 @@ summary(train)
 cor(train %>% select(where(is.numeric)))
 train %>% select(where(is.numeric))
 # train %>% select(starts_with("a"), signal, where(is.numeric))
+train %>% select(starts_with("Kplus")) %>% head()
+train %>% select(starts_with("pi")) %>% head()
+
 corrplot::corrplot(cor(train %>% select_if(is.numeric)))
