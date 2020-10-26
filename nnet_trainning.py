@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from nnet import ReadDataset,Net
+from nnet import ReadDataset, Net
 import os
 import sys
 
@@ -35,11 +35,9 @@ test_size = len(dataset) - train_size
 trainset, testset = random_split(dataset, [train_size, test_size])
 
 
-
 # Data loaders
 trainloader = DataLoader(trainset, batch_size=200, shuffle=True)
 testloader = DataLoader(testset, batch_size=5_000, shuffle=False)
-
 
 
 # Use gpu if available
@@ -76,7 +74,6 @@ n_epochs = 5
 
 for epoch in range(n_epochs):
 
-
     for i, (inputs, labels) in enumerate(trainloader):
         X = inputs.to(device)
         y = labels.to(device)
@@ -106,8 +103,8 @@ for epoch in range(n_epochs):
 
             # Figure
             plt.figure()
-            plt.plot(auc_test,label='test')
-            plt.plot(auc_train,label='train')
+            plt.plot(auc_test, label="test")
+            plt.plot(auc_train, label="train")
             plt.legend()
-            plt.savefig('output/auc_NN.png')
+            plt.savefig("output/auc_NN.png")
             plt.close()

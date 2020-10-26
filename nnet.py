@@ -1,10 +1,10 @@
-
 import pandas as pd
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
+
 
 class ReadDataset(Dataset):
     """Students Performance dataset."""
@@ -40,18 +40,22 @@ class ReadDataset(Dataset):
 
 
 class Net(nn.Module):
-    def __init__(self, input_dim, H=15, output_dim=1):
+    def __init__(self, input_dim, output_dim=1):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, input_dim)
-        self.fc2 = nn.Linear(input_dim, output_dim)
+        self.fc1 = nn.Linear(input_dim, 2 * input_dim)
         self.relu1 = nn.LeakyReLU()
+        self.fc2 = nn.Linear(2 * input_dim, 2 * output_dim)
+        self.relu2 = nn.LeakyReLU()
+        self.fc3 = nn.Linear(2 * input_dim, output_dim)
+
         self.sig = nn.Sigmoid()
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.relu1(x)
         x = self.fc2(x)
+        x = self.relu2(x)
+        x = self.fc3(x)
         x = self.sig(x)
 
         return x.squeeze()
-

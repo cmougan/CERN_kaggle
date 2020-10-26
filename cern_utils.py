@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot_feature_importance(
     columnas, model_features, columns_ploted=10, model_name="Catboost"
 ):
