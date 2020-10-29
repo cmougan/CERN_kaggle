@@ -31,24 +31,24 @@ all_df.columns = [col.replace(" ", "") for col in all_df.columns]
 
 # cos -> sin transformation
 all_df["Kst_892_0_sinThetaH"] = np.sqrt(1 - all_df["Kst_892_0_cosThetaH"]**2)
-all_df["B_DIRA_OWNPV_sin"] = np.sqrt(1 - all_df["B_DIRA_OWNPV"]**2)
+# all_df["B_DIRA_OWNPV_sin"] = np.sqrt(1 - all_df["B_DIRA_OWNPV"]**2)
 
 # x and y P components
 all_df["Kplus_P_x"] = all_df["Kplus_P"] * all_df["Kst_892_0_sinThetaH"]
 all_df["Kplus_P_y"] = all_df["Kplus_P"] * all_df["Kst_892_0_cosThetaH"]
-all_df["B_PT_x"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV"]
-all_df["B_PT_y"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV_sin"]
+# all_df["B_PT_x"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV"]
+# all_df["B_PT_y"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV_sin"]
 
 # things in hbar units
-all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
-all_df["B_hbar_2"] = all_df["B_PT"] * all_df["B_FDCHI2_OWNPV"]
-all_df["K_hbar"] = all_df["Kplus_P"] * all_df["Kplus_IP_OWNPV"]
-all_df["p_hbar"] = all_df["piminus_P"] * all_df["piminus_IP_OWNPV"]
+# all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
+# all_df["B_hbar_2"] = all_df["B_PT"] * all_df["B_FDCHI2_OWNPV"]
+# all_df["K_hbar"] = all_df["Kplus_P"] * all_df["Kplus_IP_OWNPV"]
+# all_df["p_hbar"] = all_df["piminus_P"] * all_df["piminus_IP_OWNPV"]
 
 # hbar ratios
-all_df["B_hbar_ratio"] = all_df["B_hbar"] / all_df["B_hbar_2"]
-all_df["K_p_hbar_ratio"] = all_df["K_hbar"] / all_df["p_hbar"]
-all_df["K_B_hbar_ratio"] = all_df["K_hbar"] / all_df["B_hbar"]
+# all_df["B_hbar_ratio"] = all_df["B_hbar"] / all_df["B_hbar_2"]
+# all_df["K_p_hbar_ratio"] = all_df["K_hbar"] / all_df["p_hbar"]
+# all_df["K_B_hbar_ratio"] = all_df["K_hbar"] / all_df["B_hbar"]
 
 # p ratios
 all_df["gamma_B_PT_ratio"] = (all_df["gamma_PT"] / all_df['B_PT'])
@@ -59,13 +59,13 @@ all_df["kplus_piminus_P_ratio"] = (all_df["Kplus_P"] / all_df['piminus_P'])
 # distance ratios
 all_df["b_distance_ratio"] = all_df['B_IPCHI2_OWNPV'] / all_df['B_FDCHI2_OWNPV']
 all_df["k_p_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['piminus_IP_OWNPV']
-all_df["k_b_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['B_IPCHI2_OWNPV']
-all_df["p_b_distance_ratio"] = all_df['piminus_IP_OWNPV'] / all_df['B_IPCHI2_OWNPV']
+# all_df["k_b_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['B_IPCHI2_OWNPV']
+# all_df["p_b_distance_ratio"] = all_df['piminus_IP_OWNPV'] / all_df['B_IPCHI2_OWNPV']
 all_df["k_kst_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['Kst_892_0_IP_OWNPV']
 
 # shpere radius
-all_df["sphere_radius_k_b"] =  all_df['Kplus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
-all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
+# all_df["sphere_radius_k_b"] =  all_df['Kplus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
+# all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
 
 # ANGLE ratios
 # all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
@@ -73,9 +73,9 @@ all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_
 # all_df["b_p_ratio"] = all_df["b_eta"] / all_df["piminus_ETA"]
 
 
-# transformed_values = QuantileTransformer().fit_transform(all_df)
-# transformed_df = pd.DataFrame(transformed_values)
-transformed_df = all_df.copy()
+transformed_values = QuantileTransformer().fit_transform(all_df)
+transformed_df = pd.DataFrame(transformed_values)
+# transformed_df = all_df.copy()
 
 keep_cols = ["Id", "signal", "train"]
 transformed_df.columns = [col if col in keep_cols else f"{col}_q" for col in all_df.columns]
