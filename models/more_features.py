@@ -46,6 +46,12 @@ all_df["B_PT_x"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV"]
 all_df["B_PT_y"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV_sin"]
 
 # Full p
+# all_df["kp_x0_total"] = all_df["Kplus_P_x0"] + all_df["pminus_P_x0"] + all_df["B_PT_x"]
+# all_df["kp_x_total"] = all_df["Kplus_P_x"] + all_df["pminus_P_x"] + all_df["B_PT_x"]
+# all_df["kp_y0_total"] = all_df["Kplus_P_y0"] + all_df["pminus_P_y0"] + all_df["B_PT_y"]
+# all_df["kp_y_total"] = all_df["Kplus_P_y"] + all_df["pminus_P_y"] + all_df["B_PT_y"]
+
+# Paired p
 all_df["kp_x0"] = all_df["Kplus_P_x0"] + all_df["pminus_P_x0"]
 all_df["kp_x"] = all_df["Kplus_P_x"] + all_df["pminus_P_x"]
 all_df["kp_y0"] = all_df["Kplus_P_y0"] + all_df["pminus_P_y0"]
@@ -117,6 +123,10 @@ all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_
 # all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
 # all_df["b_K_ratio"] = all_df["b_eta"] / all_df["Kplus_ETA"]
 # all_df["b_p_ratio"] = all_df["b_eta"] / all_df["piminus_ETA"]
+
+# Conservation of momentum
+# all_df["total_momentum_K"] = all_df["gamma_PT"] + all_df["Kplus_P"] - all_df["B_PT"]
+# all_df["total_momentum_p"] = all_df["gamma_PT"] + all_df["piminus_P"] - all_df["B_PT"]
 
 
 transformed_values = QuantileTransformer().fit_transform(all_df)
