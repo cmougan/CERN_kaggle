@@ -98,7 +98,18 @@ X_train, X_valid, y_train, y_valid = train_test_split(
     stratify=train.signal
 )
 
-lgb = LGBMClassifier(n_estimators=500)
+positive_cols = [
+    "Kplus_P_y_q", "Kplus_P_x_q", "Kplus_P_q",
+    "B_PT_y_q", "B_PT_x_q", "B_PT_q"
+]
+constraint_list = [1 if col in positive_cols else 0 for col in X_train.columns]
+
+lgb = LGBMClassifier(
+    n_estimators=500,
+    monotone_constraint=constraint_list,
+    n_jobs=-1,
+    # monotone_constraints_method="intermediate"
+)
 lgb.fit(X_train, y_train)
 
 pred_valid = lgb.predict_proba(X_valid)[:, 1]
