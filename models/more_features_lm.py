@@ -1,0 +1,150 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+
+
+import pandas as pd
+import numpy as np
+import random
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score,auc
+from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.preprocessing import QuantileTransformer
+
+
+from sklearn.linear_model import LogisticRegression
+
+
+random.seed(42)
+np.random.seed(42)
+
+train_raw = pd.read_csv("data/train.csv").drop(columns="BUTTER")
+test_raw = pd.read_csv("data/test.csv").drop(columns="BUTTER")
+
+train_raw['train'] = 1
+test_raw['train'] = 0
+
+all_df = pd.concat([train_raw, test_raw]).reset_index(drop=True)
+
+all_df.columns = [col.replace(" ", "") for col in all_df.columns]
+
+# cos -> sin transformation
+all_df["Kst_892_0_sinThetaH"] = np.sqrt(1 - all_df["Kst_892_0_cosThetaH"]**2)
+all_df["B_DIRA_OWNPV_sin"] = np.sqrt(1 - all_df["B_DIRA_OWNPV"]**2)
+
+# x and y P components
+all_df["Kplus_P_x"] = all_df["Kplus_P"] * all_df["Kst_892_0_sinThetaH"]
+all_df["Kplus_P_y"] = all_df["Kplus_P"] * all_df["Kst_892_0_cosThetaH"]
+all_df["B_PT_x"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV"]
+all_df["B_PT_y"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV_sin"]
+
+# things in hbar units
+all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
+all_df["B_hbar_2"] = all_df["B_PT"] * all_df["B_FDCHI2_OWNPV"]
+all_df["K_hbar"] = all_df["Kplus_P"] * all_df["Kplus_IP_OWNPV"]
+all_df["p_hbar"] = all_df["piminus_P"] * all_df["piminus_IP_OWNPV"]
+
+# hbar ratios
+all_df["B_hbar_ratio"] = all_df["B_hbar"] / all_df["B_hbar_2"]
+all_df["K_p_hbar_ratio"] = all_df["K_hbar"] / all_df["p_hbar"]
+all_df["K_B_hbar_ratio"] = all_df["K_hbar"] / all_df["B_hbar"]
+
+# p ratios
+all_df["gamma_B_PT_ratio"] = (all_df["gamma_PT"] / all_df['B_PT'])
+all_df["piminus_B_P_ratio"] = (all_df["piminus_P"] / all_df['B_PT'])
+all_df["kplus_B_P_ratio"] = (all_df["Kplus_P"] / all_df['B_PT'])
+all_df["kplus_piminus_P_ratio"] = (all_df["Kplus_P"] / all_df['piminus_P'])
+
+# distance ratios
+all_df["b_distance_ratio"] = all_df['B_IPCHI2_OWNPV'] / all_df['B_FDCHI2_OWNPV']
+all_df["k_p_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['piminus_IP_OWNPV']
+all_df["k_b_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['B_IPCHI2_OWNPV']
+all_df["p_b_distance_ratio"] = all_df['piminus_IP_OWNPV'] / all_df['B_IPCHI2_OWNPV']
+all_df["k_kst_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['Kst_892_0_IP_OWNPV']
+
+# shpere radius
+all_df["sphere_radius_k_b"] =  all_df['Kplus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
+all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
+
+# ANGLE ratios
+# all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
+# all_df["b_K_ratio"] = all_df["b_eta"] / all_df["Kplus_ETA"]
+# all_df["b_p_ratio"] = all_df["b_eta"] / all_df["piminus_ETA"]
+
+
+transformed_values = QuantileTransformer().fit_transform(all_df)
+transformed_df = pd.DataFrame(transformed_values)
+# transformed_df = all_df.copy()
+
+keep_cols = ["Id", "signal", "train"]
+transformed_df.columns = [col if col in keep_cols else f"{col}_q" for col in all_df.columns]
+
+transformed_df = transformed_df.drop(columns=keep_cols)
+
+# full_df = pd.concat([all_df, transformed_df], axis=1)
+full_df = pd.concat([all_df[keep_cols], transformed_df], axis=1)
+
+train = full_df[full_df.train == 1].drop(columns=['train', 'Id'])
+test = full_df[full_df.train != 1].drop(columns=['train', 'Id', 'signal'])
+
+X_full = train.drop(columns="signal")
+X_test = test.copy()
+y_full = train.signal
+
+X_train, X_valid, y_train, y_valid = train_test_split(
+    X_full, 
+    y_full, 
+    stratify=train.signal
+)
+
+lgb = LogisticRegression()
+lgb.fit(X_train, y_train)
+
+pred_valid = lgb.predict_proba(X_valid)[:, 1]
+pred_train = lgb.predict_proba(X_train)[:, 1]
+
+
+roc_valid = roc_auc_score(y_valid, pred_valid)
+
+# Only quantiles, 500 trees: 865 (cv 864)
+# Only quantiles + distance ratio, 500 trees: 868 (cv 863)
+# Only quantiles + many features, 500 trees: 871 (cv 870)
+# Only quantiles + many features, 1500 trees: 872 (cv 870)
+# Only quantiles + many features + special distance ratios, 500 trees: 882 (cv 877)
+# Only quantiles + many features + special distance ratios + b_px + b_py, 500 trees: 8816 (cv 8778)
+# Only quantiles + many features + special distance ratios + b_px + b_py + hbars, 500 trees: 883 (cv 8772)
+# Only quantiles + many features + special distance ratios + b_px + b_py + hbars + hbar ratios, 500 trees: 879 (cv 8787)
+# Only quantiles + many features + special distance ratios + b_px + b_py + hbars + hbar ratios + sphere radius, 500 trees: 883 (cv 877)
+# Only quantiles, 1500 trees: 866 (cv 865)
+
+roc_train = roc_auc_score(y_train, pred_train)
+
+print(f"roc valid {roc_valid:.4f}")
+print(f"roc train {roc_train:.4f}")
+
+roc_cv = cross_val_score(
+    lgb,
+    X_train,
+    y_train,
+    scoring='roc_auc',
+    cv=3
+).mean()
+
+print(f"roc cv {roc_cv:.4f}")
+
+lgb.fit(X_full, y_full)
+
+print(dict(zip(list(X_full.columns), lgb.coef_.tolist()[0])))
+
+
+test_predictions = lgb.predict_proba(X_test)[:, 1]
+
+test_raw['Predicted'] = test_predictions
+
+test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm.csv', index=False)
+
+
+
+
+
