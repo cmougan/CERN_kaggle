@@ -36,8 +36,29 @@ all_df["B_DIRA_OWNPV_sin"] = np.sqrt(1 - all_df["B_DIRA_OWNPV"]**2)
 # x and y P components
 all_df["Kplus_P_x"] = all_df["Kplus_P"] * all_df["Kst_892_0_sinThetaH"]
 all_df["Kplus_P_y"] = all_df["Kplus_P"] * all_df["Kst_892_0_cosThetaH"]
+all_df["Kplus_P_x0"] = all_df["Kplus_P"] * np.sin(all_df["Kplus_ETA"])
+all_df["Kplus_P_y0"] = all_df["Kplus_P"] * np.cos(all_df["Kplus_ETA"])
+all_df["pminus_P_x"] = all_df["piminus_P"] * all_df["Kst_892_0_sinThetaH"]
+all_df["pminus_P_y"] = all_df["piminus_P"] * all_df["Kst_892_0_cosThetaH"]
+all_df["pminus_P_x0"] = all_df["piminus_P"] * np.sin(all_df["piminus_ETA"])
+all_df["pminus_P_y0"] = all_df["piminus_P"] * np.cos(all_df["piminus_ETA"])
 all_df["B_PT_x"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV"]
 all_df["B_PT_y"] = all_df["B_PT"] * all_df["B_DIRA_OWNPV_sin"]
+
+# Full p
+all_df["kp_x0"] = all_df["Kplus_P_x0"] + all_df["pminus_P_x0"]
+all_df["kp_x"] = all_df["Kplus_P_x"] + all_df["pminus_P_x"]
+all_df["kp_y0"] = all_df["Kplus_P_y0"] + all_df["pminus_P_y0"]
+all_df["kp_y"] = all_df["Kplus_P_y"] + all_df["pminus_P_y"]
+all_df["kbx0"] = all_df["Kplus_P_x0"] + all_df["B_PT_x"]
+all_df["kb_x"] = all_df["Kplus_P_x"] + all_df["B_PT_x"]
+all_df["kby0"] = all_df["Kplus_P_y0"] + all_df["B_PT_y"]
+all_df["kb_y"] = all_df["Kplus_P_y"] + all_df["B_PT_y"]
+all_df["kp_abs_x0"] = np.abs(all_df["Kplus_P_x0"]) + np.abs(all_df["pminus_P_x0"])
+all_df["kp_abs_x"] = np.abs(all_df["Kplus_P_x"]) + np.abs(all_df["pminus_P_x"])
+all_df["kp_abs_y0"] = np.abs(all_df["Kplus_P_y0"]) + np.abs(all_df["pminus_P_y0"])
+all_df["kp_abs_y"] = np.abs(all_df["Kplus_P_y"]) + np.abs(all_df["pminus_P_y"])
+
 
 # things in hbar units
 all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
