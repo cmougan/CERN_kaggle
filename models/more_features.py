@@ -67,6 +67,23 @@ all_df["kp_abs_x"] = np.abs(all_df["Kplus_P_x"]) + np.abs(all_df["pminus_P_x"])
 all_df["kp_abs_y0"] = np.abs(all_df["Kplus_P_y0"]) + np.abs(all_df["pminus_P_y0"])
 all_df["kp_abs_y"] = np.abs(all_df["Kplus_P_y"]) + np.abs(all_df["pminus_P_y"])
 
+# Full p ratio
+all_df["kp_x0_ratio"] = (all_df["Kplus_P_x0"] + all_df["pminus_P_x0"]) / all_df["Kplus_P"]
+all_df["kp_x_ratio"] = (all_df["Kplus_P_x"] + all_df["pminus_P_x"]) / all_df["Kplus_P"]
+all_df["kp_y0_ratio"] = (all_df["Kplus_P_y0"] + all_df["pminus_P_y0"]) / all_df["Kplus_P"]
+all_df["kp_y_ratio"] = (all_df["Kplus_P_y"] + all_df["pminus_P_y"]) / all_df["Kplus_P"]
+all_df["kbx0_ratio"] = (all_df["Kplus_P_x0"] + all_df["B_PT_x"]) / all_df["Kplus_P"]
+all_df["kb_x_ratio"] = (all_df["Kplus_P_x"] + all_df["B_PT_x"]) / all_df["Kplus_P"]
+all_df["kby0_ratio"] = (all_df["Kplus_P_y0"] + all_df["B_PT_y"]) / all_df["Kplus_P"]
+all_df["kb_y_ratio"] = (all_df["Kplus_P_y"] + all_df["B_PT_y"]) / all_df["Kplus_P"]
+all_df["kp_x0_minus_ratio"] = (all_df["Kplus_P_x0"] - all_df["pminus_P_x0"]) / all_df["Kplus_P"]
+all_df["kp_x_minus_ratio"] = (all_df["Kplus_P_x"] - all_df["pminus_P_x"]) / all_df["Kplus_P"]
+all_df["kp_y0_minus_ratio"] = (all_df["Kplus_P_y0"] - all_df["pminus_P_y0"]) / all_df["Kplus_P"]
+all_df["kp_y_minus_ratio"] = (all_df["Kplus_P_y"] - all_df["pminus_P_y"]) / all_df["Kplus_P"]
+all_df["kbx0_minus_ratio"] = (all_df["Kplus_P_x0"] - all_df["B_PT_x"]) / all_df["Kplus_P"]
+all_df["kb_x_minus_ratio"] = (all_df["Kplus_P_x"] - all_df["B_PT_x"]) / all_df["Kplus_P"]
+all_df["kby0_minus_ratio"] = (all_df["Kplus_P_y0"] - all_df["B_PT_y"]) / all_df["Kplus_P"]
+all_df["kb_y_minus_ratio"] = (all_df["Kplus_P_y"] - all_df["B_PT_y"]) / all_df["Kplus_P"]
 
 # things in hbar units
 all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
