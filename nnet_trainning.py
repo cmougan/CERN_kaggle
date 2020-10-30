@@ -35,7 +35,7 @@ trainset, testset = random_split(dataset, [train_size, test_size])
 
 
 # Data loaders
-trainloader = DataLoader(trainset, batch_size=200, shuffle=True)
+trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
 testloader = DataLoader(testset, batch_size=5_000, shuffle=False)
 
 
@@ -50,7 +50,7 @@ nnet = Net(dataset.__shape__()).to(device)
 criterion = nn.BCELoss()
 
 # Optimizer
-optimizer = optim.Adam(nnet.parameters(), weight_decay=0.0001)
+optimizer = optim.Adam(nnet.parameters(), weight_decay=0.00001)
 
 
 # Train the net
@@ -70,9 +70,10 @@ auc_train = []
 auc_test = []
 
 # hyperparameteres
-n_epochs = 1
+n_epochs = 100
 
 for epoch in range(n_epochs):
+    print(epoch)
 
     for i, (inputs, labels) in enumerate(trainloader):
         X = inputs.to(device)
@@ -97,7 +98,7 @@ for epoch in range(n_epochs):
 
         losses.append(loss.item())
 
-        if i % 100 == 0:
+        if i % 500 == 0:
             auc_train.append(evaluate_auc(nnet, X.float(), y.float()))
             auc_test.append(evaluate_auc(nnet, X_test, y_test))
 
@@ -107,4 +108,14 @@ for epoch in range(n_epochs):
             plt.plot(auc_train, label="train")
             plt.legend()
             plt.savefig("output/auc_NN.png")
+            plt.savefig("output/auc_NN.svg",format='svg')
             plt.close()
+
+            # Save model
+            torch.save(nnet.state_dict(), 'output/weights.pt')
+    if epoch%10==0:
+        path = 'output/weights' + str(epoch)+'.pt'
+        torch.save(nnet.state_dict(), path)
+
+
+print('done')

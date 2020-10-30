@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -149,24 +150,43 @@ class Net(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, 2 * input_dim)
         self.relu1 = nn.LeakyReLU()
-        self.fc2 = nn.Linear(2 * input_dim, 2 * input_dim)
+        self.fc2 = nn.Linear(2 * input_dim, 3 * input_dim)
         self.relu2 = nn.LeakyReLU()
 
-        self.fc3 = nn.Linear(2 * input_dim, input_dim)
+        self.fc3 = nn.Linear(3 * input_dim, 2 * input_dim)
         self.relu3 = nn.LeakyReLU()
 
-        self.fc4 = nn.Linear(input_dim, 1)
+        self.fc4 = nn.Linear(2 * input_dim, 1 * input_dim)
+        self.relu4 = nn.LeakyReLU()
+
+        self.fc5 = nn.Linear(input_dim, 1)
 
         self.sig = nn.Sigmoid()
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.relu1(x)
+
         x = self.fc2(x)
         x = self.relu2(x)
+
         x = self.fc3(x)
         x = self.relu3(x)
+
         x = self.fc4(x)
+        x = self.relu4(x)
+
+        x = self.fc5(x)
         x = self.sig(x)
 
         return x.squeeze()
+    def predict(self, x):
+        # Apply softmax to output.
+        pred = F.softmax(self.forward(x))
+        ans = []
+
+        # Pick the class with maximum weight
+        for t in pred:
+            ans.append(torch.argmax(t))
+
+        return torch.tensor(ans)
