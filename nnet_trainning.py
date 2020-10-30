@@ -25,9 +25,8 @@ def evaluate_auc(model, data, label):
 
 csv_file = os.path.join(sys.path[0], "train.csv")
 
-
+# Read data
 dataset = ReadDataset(csv_file)
-
 
 # Split into training and test
 train_size = int(0.8 * len(dataset))
@@ -45,7 +44,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # Neural Network
-nnet = Net(dataset.__shape__(), 15).to(device)
+nnet = Net(dataset.__shape__()).to(device)
 
 # Loss function
 criterion = nn.BCELoss()
@@ -70,7 +69,7 @@ auc_train = []
 auc_test = []
 
 # hyperparameteres
-n_epochs = 5
+n_epochs = 1
 
 for epoch in range(n_epochs):
 
