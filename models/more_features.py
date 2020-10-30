@@ -116,8 +116,8 @@ all_df["p_b_distance_ratio"] = all_df['piminus_IP_OWNPV'] / all_df['B_IPCHI2_OWN
 all_df["k_kst_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['Kst_892_0_IP_OWNPV']
 
 # shpere radius
-all_df["sphere_radius_k_b"] =  all_df['Kplus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
-all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
+# all_df["sphere_radius_k_b"] =  all_df['Kplus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
+# all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
 
 # ANGLE ratios
 # all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
@@ -125,9 +125,33 @@ all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_
 # all_df["b_p_ratio"] = all_df["b_eta"] / all_df["piminus_ETA"]
 
 # Conservation of momentum
-# all_df["total_momentum_K"] = all_df["gamma_PT"] + all_df["Kplus_P"] - all_df["B_PT"]
-# all_df["total_momentum_p"] = all_df["gamma_PT"] + all_df["piminus_P"] - all_df["B_PT"]
+all_df["total_momentum"] = all_df["gamma_PT"] + all_df["Kplus_P"] + all_df["piminus_P"] - all_df["B_PT"]
+all_df["total_momentum_sq"] = all_df["gamma_PT"]**2 + all_df["Kplus_P"]**2 + all_df["piminus_P"]**2 - all_df["B_PT"]**2
+all_df["total_momentum_x"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
+all_df["total_momentum_x0"] = - all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
+all_df["total_momentum_y"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] + all_df["pminus_P_y"] - all_df["B_PT"]
+all_df["total_momentum_y1"] = all_df["gamma_PT"] - all_df["Kplus_P_y"] + all_df["pminus_P_y"] - all_df["B_PT"]
+all_df["total_momentum_y2"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] - all_df["pminus_P_y"] - all_df["B_PT"]
+all_df["total_momentum_abs"] = np.abs(all_df["total_momentum"])
+all_df["total_momentum_x_abs"] = np.abs(all_df["total_momentum_x"])
+all_df["total_momentum_y_abs"] = np.abs(all_df["total_momentum_y"])
 
+
+all_df["total_momentum_K"] = all_df["gamma_PT"] + all_df["Kplus_P"] - all_df["B_PT"]
+all_df["total_momentum_K_x"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] - all_df["B_PT_x"]
+all_df["total_momentum_K_y"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] - all_df["B_PT_y"]
+
+all_df["total_momentum_K_abs"] = np.abs(all_df["total_momentum_K"])
+all_df["total_momentum_K_x_abs"] = np.abs(all_df["total_momentum_K_x"])
+all_df["total_momentum_K_y_abs"] = np.abs(all_df["total_momentum_K_y"])
+
+all_df["total_momentum_p"] = all_df["gamma_PT"] + all_df["piminus_P"] - all_df["B_PT"]
+all_df["total_momentum_p_x"] = all_df["gamma_PT"] + all_df["pminus_P_x"] - all_df["B_PT_x"]
+all_df["total_momentum_p_y"] = all_df["gamma_PT"] + all_df["pminus_P_y"] - all_df["B_PT_y"]
+
+all_df["total_momentum_p_abs"] = np.abs(all_df["total_momentum_p"])
+all_df["total_momentum_p_x_abs"] = np.abs(all_df["total_momentum_p_x"])
+all_df["total_momentum_p_y_abs"] = np.abs(all_df["total_momentum_p_y"])
 
 transformed_values = QuantileTransformer().fit_transform(all_df)
 transformed_df = pd.DataFrame(transformed_values)
@@ -162,7 +186,7 @@ constraint_list = [1 if col in positive_cols else 0 for col in X_train.columns]
 
 lgb = LGBMClassifier(
     n_estimators=500,
-    monotone_constraint=constraint_list,
+    # monotone_constraint=constraint_list,
     n_jobs=-1,
     # monotone_constraints_method="intermediate"
 )
@@ -209,6 +233,11 @@ test_raw['Predicted'] = test_predictions
 test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm.csv', index=False)
 
 
-
+"""
+B0 -> K0* + gamma
+K0* -> K+ + pi-
+abs(gamma_P + k+_P + pi-_P - B0_P) small -> signal = 1
+abs(gamma_P + k+_P + pi-_P - B0_P) big -> signal = 0
+"""
 
 
