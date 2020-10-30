@@ -52,6 +52,7 @@ criterion = nn.BCELoss()
 # Optimizer
 optimizer = optim.Adam(nnet.parameters(), weight_decay=0.0001)
 
+
 # Train the net
 loss_per_iter = []
 loss_per_batch = []
