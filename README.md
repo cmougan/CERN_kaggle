@@ -1,6 +1,6 @@
 # CERN_kaggle
 
-https://www.researchgate.net/figure/Feynman-diagrams-for-a-B-0-D-0-K-0-and-b-B-0-D-0-K-0_fig1_257291102
+ 
 
 
 CP violation 
