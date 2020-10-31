@@ -91,16 +91,16 @@ all_df["kb_x_minus_ratio"] = (all_df["Kplus_P_x"] - all_df["B_PT_x"]) / all_df["
 all_df["kby0_minus_ratio"] = (all_df["Kplus_P_y0"] - all_df["B_PT_y"]) / all_df["Kplus_P"]
 all_df["kb_y_minus_ratio"] = (all_df["Kplus_P_y"] - all_df["B_PT_y"]) / all_df["Kplus_P"]
 
-# things in hbar units
-all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
-all_df["B_hbar_2"] = all_df["B_PT"] * all_df["B_FDCHI2_OWNPV"]
-all_df["K_hbar"] = all_df["Kplus_P"] * all_df["Kplus_IP_OWNPV"]
-all_df["p_hbar"] = all_df["piminus_P"] * all_df["piminus_IP_OWNPV"]
-
-# hbar ratios
-all_df["B_hbar_ratio"] = all_df["B_hbar"] / all_df["B_hbar_2"]
-all_df["K_p_hbar_ratio"] = all_df["K_hbar"] / all_df["p_hbar"]
-all_df["K_B_hbar_ratio"] = all_df["K_hbar"] / all_df["B_hbar"]
+# # things in hbar units
+# all_df["B_hbar"] = all_df["B_PT"] * all_df["B_IPCHI2_OWNPV"]
+# all_df["B_hbar_2"] = all_df["B_PT"] * all_df["B_FDCHI2_OWNPV"]
+# all_df["K_hbar"] = all_df["Kplus_P"] * all_df["Kplus_IP_OWNPV"]
+# all_df["p_hbar"] = all_df["piminus_P"] * all_df["piminus_IP_OWNPV"]
+#
+# # hbar ratios
+# all_df["B_hbar_ratio"] = all_df["B_hbar"] / all_df["B_hbar_2"]
+# all_df["K_p_hbar_ratio"] = all_df["K_hbar"] / all_df["p_hbar"]
+# all_df["K_B_hbar_ratio"] = all_df["K_hbar"] / all_df["B_hbar"]
 
 # p ratios
 all_df["gamma_B_PT_ratio"] = (all_df["gamma_PT"] / all_df['B_PT'])
@@ -122,13 +122,17 @@ all_df["k_kst_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['Kst_892_0_IP
 # ANGLE ratios
 # all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
 # all_df["b_K_ratio"] = all_df["b_eta"] / all_df["Kplus_ETA"]
-# all_df["b_p_ratio"] = all_df["b_eta"] / all_df["piminus_ETA"]
+
+# ETA ratio
+all_df["eta_ratio"] = all_df["Kplus_ETA"] / all_df["piminus_ETA"]
 
 # Conservation of momentum
 all_df["total_momentum"] = all_df["gamma_PT"] + all_df["Kplus_P"] + all_df["piminus_P"] - all_df["B_PT"]
 all_df["total_momentum_sq"] = all_df["gamma_PT"]**2 + all_df["Kplus_P"]**2 + all_df["piminus_P"]**2 - all_df["B_PT"]**2
 all_df["total_momentum_x"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
-all_df["total_momentum_x0"] = - all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
+all_df["total_momentum_x0"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
+all_df["total_momentum_x1"] = all_df["gamma_PT"] - all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
+all_df["total_momentum_x2"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] - all_df["pminus_P_x"] - all_df["B_PT"]
 all_df["total_momentum_y"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] + all_df["pminus_P_y"] - all_df["B_PT"]
 all_df["total_momentum_y1"] = all_df["gamma_PT"] - all_df["Kplus_P_y"] + all_df["pminus_P_y"] - all_df["B_PT"]
 all_df["total_momentum_y2"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] - all_df["pminus_P_y"] - all_df["B_PT"]
