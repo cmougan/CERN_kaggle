@@ -23,21 +23,22 @@ def evaluate_auc(model, data, label):
     return roc_auc_score(label.detach().numpy(), model(data.float()).detach().numpy())
 
 
-csv_file = os.path.join(sys.path[0], "train.csv")
+csv_file = os.path.join(sys.path[0], "test.csv")
 
 # Read data
 dataset = ReadDataset(csv_file)
 
 # Split into training and test
-train_size = int(0.8 * len(dataset))
-test_size = len(dataset) - train_size
-trainset, testset = random_split(dataset, [train_size, test_size])
+#train_size = int(0.8 * len(dataset))
+#test_size = len(dataset) - train_size
+#trainset, testset = random_split(dataset, [train_size, test_size])
 
 
 # Data loaders
-trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
-testloader = DataLoader(testset, batch_size=5_000, shuffle=False)
+#trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
+#testloader = DataLoader(testset, batch_size=5_000, shuffle=False)
 
+test = Dataset(dataset)
 
 # Use gpu if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -48,3 +49,5 @@ nnet = Net(dataset.__shape__()).to(device)
 
 nnet.load_state_dict(torch.load("output/weights.pt"))
 
+
+nnet.predict(test)

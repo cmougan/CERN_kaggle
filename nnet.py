@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 class ReadDataset(Dataset):
     """Students Performance dataset."""
 
-    def __init__(self, csv_file):
+    def __init__(self, csv_file,for_test=False,test_path='test.csv'):
         """Initializes instance of class StudentsPerformanceDataset.
 
         Args:
@@ -25,19 +25,30 @@ class ReadDataset(Dataset):
         self.df = df
         self.df = self.transform(df)
 
-        MinMaxScaler()
-
         # Target
         self.target = "signal"
 
         # Save target and predictors
         self.X = self.df.drop(self.target, axis=1)
+        print(self.X.shape)
+
         self.y = self.df[self.target]
 
         # Normalize
+        self.scaler = MinMaxScaler()
         self.X = pd.DataFrame(
-            MinMaxScaler().fit_transform(self.X), columns=self.X.columns
+            self.scaler.fit_transform(self.X), columns=self.X.columns
         )
+        if for_test:
+            self.df = pd.read_csv(test_path).drop(columns="BUTTER")
+            self.df.columns = self.df.columns.str.replace(" ", "")
+
+            self.df = self.transform(self.df)
+            print(self.df.shape)
+
+            self.df = self.scaler.transform(self.df)
+            self.X = self.df
+
 
     def __len__(self):
         return len(self.df)
@@ -180,8 +191,17 @@ class Net(nn.Module):
         x = self.sig(x)
 
         return x.squeeze()
-    def predict(self, x):
-        # Apply softmax to output.
+
+    def step(self, inputs):
+        data, label = inputs  # ignore label
+        outputs = self.forward(data)
+        _, preds = torch.max(outputs.data, 1)
+        # preds, outputs  are cuda tensors. Right?
+        return preds, outputs
+
+    def predict(self, dataloader):
+        '''
+                # Apply softmax to output.
         pred = F.softmax(self.forward(x))
         ans = []
 
@@ -190,3 +210,9 @@ class Net(nn.Module):
             ans.append(torch.argmax(t))
 
         return torch.tensor(ans)
+        '''
+        for i, batch in enumerate(dataloader):
+            pred, output = self.step(batch)
+            prediction_list.append(pred.cpu())
+
+
