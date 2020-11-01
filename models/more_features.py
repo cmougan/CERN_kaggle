@@ -209,7 +209,7 @@ constraint_list = [1 if col in positive_cols else 0 for col in X_train.columns]
 
 # lgb = CatBoostClassifier(iterations=3000)
 lgb = LGBMClassifier(
-    n_estimators=500,
+    n_estimators=1500,
     # monotone_constraint=constraint_list,
     n_jobs=-1,
     # monotone_constraints_method="intermediate"
