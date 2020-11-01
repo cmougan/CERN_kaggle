@@ -125,9 +125,9 @@ all_df["k_kst_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['Kst_892_0_IP
 # all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
 
 # ANGLE ratios
-# all_df["B_DIR"] = np.arccos(all_df["B_DIRA_OWNPV"])
-# all_df["theta"] = np.arccos(all_df["Kst_892_0_cosThetaH"])
-# all_df["angle_ratio"] = np.log(all_df["B_DIR"] / all_df["theta"])
+all_df["B_DIR"] = np.arccos(all_df["B_DIRA_OWNPV"])
+all_df["theta"] = np.arccos(all_df["Kst_892_0_cosThetaH"])
+all_df["angle_ratio"] = np.log(all_df["B_DIR"] / all_df["theta"])
 
 # all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
 # all_df["b_K_ratio"] = all_df["b_eta"] / all_df["Kplus_ETA"]
