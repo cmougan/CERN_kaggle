@@ -14,6 +14,7 @@ from sklearn.preprocessing import QuantileTransformer
 
 
 from lightgbm import LGBMClassifier
+# from catboost import CatBoostClassifier
 
 
 random.seed(42)
@@ -105,7 +106,11 @@ all_df["kb_y_minus_ratio"] = (all_df["Kplus_P_y"] - all_df["B_PT_y"]) / all_df["
 # p ratios
 all_df["gamma_B_PT_ratio"] = (all_df["gamma_PT"] / all_df['B_PT'])
 all_df["piminus_B_P_ratio"] = (all_df["piminus_P"] / all_df['B_PT'])
+# all_df["piminus_B_P_ratio_x"] = (all_df["pminus_P_x"] / all_df['B_PT'])
+# all_df["piminus_B_P_ratio_y"] = (all_df["pminus_P_y"] / all_df['B_PT'])
 all_df["kplus_B_P_ratio"] = (all_df["Kplus_P"] / all_df['B_PT'])
+# all_df["kplus_B_P_ratio_x"] = (all_df["Kplus_P_x"] / all_df['B_PT'])
+# all_df["kplus_B_P_ratio_y"] = (all_df["Kplus_P_y"] / all_df['B_PT'])
 all_df["kplus_piminus_P_ratio"] = (all_df["Kplus_P"] / all_df['piminus_P'])
 
 # distance ratios
@@ -120,6 +125,10 @@ all_df["k_kst_distance_ratio"] = all_df['Kplus_IP_OWNPV'] / all_df['Kst_892_0_IP
 # all_df["sphere_radius_p_b"] =  all_df['piminus_IP_OWNPV']**2 + all_df['B_IPCHI2_OWNPV']**2
 
 # ANGLE ratios
+# all_df["B_DIR"] = np.arccos(all_df["B_DIRA_OWNPV"])
+# all_df["theta"] = np.arccos(all_df["Kst_892_0_cosThetaH"])
+# all_df["angle_ratio"] = np.log(all_df["B_DIR"] / all_df["theta"])
+
 # all_df["b_eta"] = np.arccos(all_df["B_DIRA_OWNPV"])
 # all_df["b_K_ratio"] = all_df["b_eta"] / all_df["Kplus_ETA"]
 
@@ -128,17 +137,27 @@ all_df["eta_ratio"] = all_df["Kplus_ETA"] / all_df["piminus_ETA"]
 
 # Conservation of momentum
 all_df["total_momentum"] = all_df["gamma_PT"] + all_df["Kplus_P"] + all_df["piminus_P"] - all_df["B_PT"]
+all_df["total_momentum1"] = all_df["gamma_PT"] - all_df["Kplus_P"] + all_df["piminus_P"] - all_df["B_PT"]
+all_df["total_momentum2"] = all_df["gamma_PT"] + all_df["Kplus_P"] - all_df["piminus_P"] - all_df["B_PT"]
 all_df["total_momentum_sq"] = all_df["gamma_PT"]**2 + all_df["Kplus_P"]**2 + all_df["piminus_P"]**2 - all_df["B_PT"]**2
+
 all_df["total_momentum_x"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
+all_df["total_momentum_x2p"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] + 2 * all_df["pminus_P_x"] - all_df["B_PT"]
 all_df["total_momentum_x0"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
 all_df["total_momentum_x1"] = all_df["gamma_PT"] - all_df["Kplus_P_x"] + all_df["pminus_P_x"] - all_df["B_PT"]
 all_df["total_momentum_x2"] = all_df["gamma_PT"] + all_df["Kplus_P_x"] - all_df["pminus_P_x"] - all_df["B_PT"]
+
 all_df["total_momentum_y"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] + all_df["pminus_P_y"] - all_df["B_PT"]
+all_df["total_momentum_y2p"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] + 2 * all_df["pminus_P_y"] - all_df["B_PT"]
 all_df["total_momentum_y1"] = all_df["gamma_PT"] - all_df["Kplus_P_y"] + all_df["pminus_P_y"] - all_df["B_PT"]
 all_df["total_momentum_y2"] = all_df["gamma_PT"] + all_df["Kplus_P_y"] - all_df["pminus_P_y"] - all_df["B_PT"]
+
 all_df["total_momentum_abs"] = np.abs(all_df["total_momentum"])
 all_df["total_momentum_x_abs"] = np.abs(all_df["total_momentum_x"])
 all_df["total_momentum_y_abs"] = np.abs(all_df["total_momentum_y"])
+
+# all_df["b_pi_dff_P_y"] = 2 * all_df["pminus_P_y"] - all_df["B_PT"]
+# all_df["b_pi_dff_P_x"] = 2 * all_df["pminus_P_x"] - all_df["B_PT"]
 
 
 all_df["total_momentum_K"] = all_df["gamma_PT"] + all_df["Kplus_P"] - all_df["B_PT"]
@@ -188,6 +207,7 @@ positive_cols = [
 ]
 constraint_list = [1 if col in positive_cols else 0 for col in X_train.columns]
 
+# lgb = CatBoostClassifier(iterations=3000)
 lgb = LGBMClassifier(
     n_estimators=500,
     # monotone_constraint=constraint_list,
