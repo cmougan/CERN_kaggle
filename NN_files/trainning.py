@@ -13,8 +13,6 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 
 from nnet import ReadDataset, Net
-import os
-import sys
 import time
 
 from sklearn.metrics import roc_auc_score
@@ -25,7 +23,7 @@ def evaluate_auc(model, data, label):
 
 
 tic = time.time()
-csv_file = os.path.join(sys.path[0], "train.csv")
+csv_file = "../train.csv"
 
 # Read data
 dataset = ReadDataset(csv_file)
@@ -74,7 +72,7 @@ auc_train = []
 auc_test = []
 
 # hyperparameteres
-n_epochs = 50
+n_epochs = 1
 
 for epoch in range(n_epochs):
     print(epoch)
@@ -108,7 +106,7 @@ for epoch in range(n_epochs):
 
             # Figure
             plt.figure()
-            plt.ylim([0.6,1])
+            plt.ylim([0.6, 1])
             plt.plot(auc_test, label="test")
             plt.plot(auc_train, label="train")
             plt.legend()
@@ -122,6 +120,6 @@ for epoch in range(n_epochs):
 
 torch.save(nnet.state_dict(), "output/weights_final.pt")
 toc = time.time()
-elap_time = np.abs(tic - toc)
+elap_time = np.round(np.abs(tic - toc), 1)
 print("Elapsed time: ", elap_time)
 print("done")

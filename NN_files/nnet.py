@@ -7,6 +7,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.externals import joblib
 import random
+import os
+
+# os.path.isfile(fname)
 
 random.seed(0)
 
@@ -33,11 +36,15 @@ class ReadDataset(Dataset):
         self.X = self.df.drop(self.target, axis=1)
         self.y = self.df[self.target]
 
-        # Instantiate scaler and save
-        self.scaler = MinMaxScaler()
-        self.scaler = self.scaler.fit(self.X)
-        ## Save scaler to be later used on the prediction
-        joblib.dump(self.scaler, "output/scaler.save")
+        # If the scaler does not exist create it
+        if os.path.isfile("output/scaler.save") == False:
+            self.scaler = MinMaxScaler()
+            self.scaler = self.scaler.fit(self.X)
+            ## Save scaler to be later used on the prediction
+            joblib.dump(self.scaler, "output/scaler.save")
+        # If the scale exist, load it
+        else:
+            self.scaler = joblib.load("output/scaler.save")
         ## Scale data
         self.X = pd.DataFrame(self.scaler.transform(self.X), columns=self.X.columns)
 
@@ -47,7 +54,6 @@ class ReadDataset(Dataset):
             self.df.columns = self.df.columns.str.replace(" ", "")
 
             self.df = self.transform(self.df)
-            print(self.df.shape)
 
             self.scaler = joblib.load("output/scaler.save")
             self.df = self.scaler.transform(self.df)
