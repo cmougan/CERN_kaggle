@@ -23,7 +23,7 @@ def evaluate_auc(model, data, label):
 
 
 tic = time.time()
-csv_file = "../train.csv"
+csv_file = "train.csv"
 
 # Read data
 dataset = ReadDataset(csv_file)
@@ -72,7 +72,7 @@ auc_train = []
 auc_test = []
 
 # hyperparameteres
-n_epochs = 1
+n_epochs = 10
 
 for epoch in range(n_epochs):
     print(epoch)

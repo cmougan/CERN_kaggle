@@ -206,14 +206,23 @@ class Net(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, 4 * input_dim)
         self.relu1 = nn.SELU()
+        self.batchnorm1 = nn.BatchNorm1d(4 * input_dim)
+        self.drop1 = nn.Dropout(0.1)
+
         self.fc2 = nn.Linear(4 * input_dim, 3 * input_dim)
         self.relu2 = nn.SELU()
+        self.batchnorm2 = nn.BatchNorm1d(3 * input_dim)
+        self.drop2 = nn.Dropout(0.1)
 
         self.fc3 = nn.Linear(3 * input_dim, 2 * input_dim)
         self.relu3 = nn.SELU()
+        self.batchnorm3 = nn.BatchNorm1d(2 * input_dim)
+        self.drop3 = nn.Dropout(0.1)
 
         self.fc4 = nn.Linear(2 * input_dim, 1 * input_dim)
         self.relu4 = nn.SELU()
+        self.batchnorm4 = nn.BatchNorm1d(input_dim)
+        self.drop4 = nn.Dropout(0.1)
 
         self.fc5 = nn.Linear(input_dim, 1)
 
@@ -222,15 +231,23 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.fc1(x)
         x = self.relu1(x)
+        self.batchnorm1(x)
+        self.drop1(x)
 
         x = self.fc2(x)
         x = self.relu2(x)
+        self.batchnorm2(x)
+        self.drop2(x)
 
         x = self.fc3(x)
         x = self.relu3(x)
+        self.batchnorm3(x)
+        self.drop3(x)
 
         x = self.fc4(x)
         x = self.relu4(x)
+        self.batchnorm4(x)
+        self.drop4(x)
 
         x = self.fc5(x)
         x = self.sig(x)
