@@ -11,12 +11,6 @@ from datetime import date
 from nnet import ReadDataset, Net
 
 
-def evaluate_auc(model, data, label):
-    return np.round(
-        roc_auc_score(label.detach().numpy(), model(data.float()).detach().numpy()), 3
-    )
-
-
 # Use gpu if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

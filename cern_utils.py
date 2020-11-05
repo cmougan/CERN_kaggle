@@ -33,3 +33,4 @@ def plot_feature_importance(
     )
     plt.title("Feature Importance for {}".format(model_name))
     plt.show()
+
