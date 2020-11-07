@@ -5,14 +5,16 @@ import matplotlib.pyplot as plt
 plt.style.use("seaborn")
 import pandas as pd
 import numpy as np
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score,log_loss
 import torch
 from datetime import date
-from nnet import ReadDataset, Net
+from nnet import ReadDataset, Net,ResNet
 
 
 def evaluate_auc(model, data, label):
     return roc_auc_score(label.detach().numpy(), model(data.float()).detach().numpy())
+def evaluate_log_loss(model, data, label):
+    return log_loss(label.detach().numpy(), model(data.float()).detach().numpy())
 
 
 # Use gpu if available
@@ -20,7 +22,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Neural Network
 dataset = ReadDataset("train_split.csv")
-nnet = Net(dataset.__shape__()).to(device)
+nnet = ResNet(dataset.__shape__()).to(device)
 nnet.load_state_dict(torch.load("output/weights0.pt"))
 
 
@@ -31,7 +33,8 @@ X_train = torch.tensor(dataset.X.values).to(device).float()
 y_train = torch.tensor(dataset.y.values).to(device).float()
 
 # Predictions
-print("Results in train: ", evaluate_auc(nnet, X_train, y_train))
+print("Results in train AUC: ", evaluate_auc(nnet, X_train, y_train))
+print("Results in train BCE: ", evaluate_log_loss(nnet, X_train, y_train))
 train_out = nnet.forward(X_train)
 
 # Store the predictions
@@ -47,9 +50,11 @@ X_val = torch.tensor(dataset.X.values).to(device).float()
 y_val = torch.tensor(dataset.y.values).to(device).float()
 
 # Predictions
-print("Results in validation: ", evaluate_auc(nnet, X_val, y_val))
-val_out = nnet.forward(X_val)
+print("Results in validation AUC: ", evaluate_auc(nnet, X_val, y_val))
+print("Results in validation BCE: ", evaluate_log_loss(nnet, X_val, y_val))
 
+val_out = nnet.forward(X_val)
+'''
 # Store the predictions
 validation = pd.read_csv("validation.csv", index_col="Id")
 validation["Predicted"] = val_out.detach().numpy()
@@ -71,3 +76,4 @@ file_name = (
 )
 test[["Predicted"]].to_csv(file_name)
 print("done")
+'''

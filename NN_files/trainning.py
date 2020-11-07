@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from nnet import ReadDataset, Net
+from nnet import ReadDataset, Net, ResNet
 import time
 
 from sklearn.metrics import roc_auc_score
@@ -40,7 +40,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # Neural Network
-nnet = Net(trainset.__shape__()).to(device)
+nnet = ResNet(trainset.__shape__()).to(device)
 
 # Loss function
 criterion = nn.BCELoss()
@@ -68,7 +68,7 @@ auc_train = []
 auc_test = []
 
 # hyperparameteres
-n_epochs = 1
+n_epochs = 4
 
 for epoch in range(n_epochs):
     print(epoch)

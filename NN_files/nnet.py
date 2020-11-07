@@ -457,12 +457,12 @@ class ReadDataset(Dataset):
 class Net(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 4 * input_dim)
+        self.fc1 = nn.Linear(input_dim, 6 * input_dim)
         self.relu1 = nn.SELU()
-        self.batchnorm1 = nn.BatchNorm1d(4 * input_dim)
+        self.batchnorm1 = nn.BatchNorm1d(6 * input_dim)
         self.drop1 = nn.Dropout(0.05, inplace=False)
 
-        self.fc2 = nn.Linear(4 * input_dim, 3 * input_dim, bias=False)
+        self.fc2 = nn.Linear(6 * input_dim, 3 * input_dim, bias=False)
         self.relu2 = nn.SELU()
         self.batchnorm2 = nn.BatchNorm1d(
             3 * input_dim,
@@ -534,3 +534,130 @@ class Net(nn.Module):
 
         # Transform to
         return out.detach().numpy().squeeze()
+
+
+class ResNet(nn.Module):
+    def __init__(self, input_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, 6 * input_dim)
+        self.relu1 = nn.SELU()
+        self.batchnorm1 = nn.BatchNorm1d(6 * input_dim)
+        self.drop1 = nn.Dropout(0.05, inplace=False)
+
+        self.fc2 = nn.Linear(6 * input_dim, 3 * input_dim, bias=False)
+        self.relu2 = nn.SELU()
+        self.batchnorm2 = nn.BatchNorm1d(
+            3 * input_dim + input_dim,
+            eps=1e-05,
+            momentum=0.1,
+            affine=True,
+            track_running_stats=True,
+        )
+        self.drop2 = nn.Dropout(0.05, inplace=False)
+
+        self.fc3 = nn.Linear(3 * input_dim + input_dim, 2 * input_dim, bias=False)
+        self.relu3 = nn.SELU()
+        self.batchnorm3 = nn.BatchNorm1d(
+            2 * input_dim,
+            eps=1e-05,
+            momentum=0.1,
+            affine=True,
+            track_running_stats=True,
+        )
+        self.drop3 = nn.Dropout(0.05, inplace=False)
+
+        self.fc4 = nn.Linear(2 * input_dim, 1 * input_dim, bias=False)
+        self.relu4 = nn.SELU()
+        self.batchnorm4 = nn.BatchNorm1d(
+            input_dim, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True
+        )
+        self.drop4 = nn.Dropout(0.05, inplace=False)
+
+        self.fc5 = nn.Linear(input_dim, 1, bias=True)
+
+        self.sig = nn.Sigmoid()
+
+    def forward(self, x):
+        x1 = x
+        x = self.fc1(x)
+        x = self.relu1(x)
+        self.batchnorm1(x)
+        self.drop1(x)
+
+        x = self.fc2(x)
+        x = self.relu2(torch.cat((x, x1), 1))
+        self.batchnorm2(x)
+        self.drop2(x)
+
+        x = self.fc3(x)
+        x = self.relu3(x)
+        self.batchnorm3(x)
+        self.drop3(x)
+
+        x = self.fc4(x)
+        x = self.relu4(x)
+        self.batchnorm4(x)
+        self.drop4(x)
+
+        x = self.fc5(x)
+        x = self.sig(x)
+
+        return x.squeeze()
+
+    def step(self, inputs):
+        data, label = inputs  # ignore label
+        outputs = self.forward(data)
+        _, preds = torch.max(outputs.data, 1)
+        # preds, outputs  are cuda tensors. Right?
+        return preds, outputs
+
+    def predict_proba(self, data):
+        # Pass the NN forward
+        out = self.forward(data)
+
+        # Transform to
+        return out.detach().numpy().squeeze()
+
+
+class BasicBlock(nn.Module):
+    def __init__(self, siz3, downsample=None):
+        super().__init__()
+        self.fc1 = nn.Linear(size, 2 * size)
+
+        self.bn1 = nn.BatchNorm1d(2 * size)
+        self.relu = nn.ReLU(inplace=True)
+        self.fc2 = nn.Linear(2 * size, size)
+        self.bn2 = nn.BatchNorm1d(size)
+        self.downsample = downsample
+
+    def forward(self, x):
+        identity = x
+
+        out = self.fc1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.fc2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+    def _make_layer(block, inplanes, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or inplanes != planes:
+            downsample = nn.Sequential(
+                nn.Conv2d(inplanes, planes, 1, stride, bias=False),
+                nn.BatchNorm2d(planes),
+            )
+        layers = []
+        layers.append(block(inplanes, planes, stride, downsample))
+        inplanes = planes
+        for _ in range(1, blocks):
+            layers.append(block(inplanes, planes))
+        return nn.Sequential(*layers)
