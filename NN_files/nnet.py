@@ -17,7 +17,7 @@ random.seed(0)
 class ReadDataset(Dataset):
     """CERN kaagle dataset."""
 
-    def __init__(self, csv_file, for_test=False, test_path="test.csv"):
+    def __init__(self, csv_file, for_test=False):
         """
         Args:
             csv_file (str): Path to the csv file with the students data.
@@ -32,10 +32,13 @@ class ReadDataset(Dataset):
 
         # Target
         self.target = "signal"
-
-        # Save target and predictors
-        self.X = self.df.drop(self.target, axis=1)
-        self.y = self.df[self.target]
+        # If we read test, not load the target
+        if for_test == False:
+            # Save target and predictors
+            self.X = self.df.drop(self.target, axis=1)
+            self.y = self.df[self.target]
+        else:
+            self.X = self.df
 
         # If the scaler does not exist create it
         if os.path.isfile("output/scaler.save") == False:
@@ -47,18 +50,8 @@ class ReadDataset(Dataset):
         else:
             self.scaler = joblib.load("output/scaler.save")
         ## Scale data
+
         self.X = pd.DataFrame(self.scaler.transform(self.X), columns=self.X.columns)
-
-        # In case its for test, everything will be read and
-        if for_test:
-            self.df = pd.read_csv(test_path).drop(columns="BUTTER")
-            self.df.columns = self.df.columns.str.replace(" ", "")
-
-            self.df = self.transform(self.df)
-
-            self.scaler = joblib.load("output/scaler.save")
-            self.df = self.scaler.transform(self.df)
-            self.X = self.df
 
     def __len__(self):
         return len(self.df)
@@ -191,7 +184,7 @@ class ReadDataset(Dataset):
         self.df = df
         return self.df
 
-    def feature_engineering(self,all_df):
+    def feature_engineering(self, all_df):
         """
         Features by david 05/11
         """
