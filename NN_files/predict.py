@@ -22,9 +22,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 dataset = ReadDataset("train_split.csv")
 nnet = Net(dataset.__shape__()).to(device)
 nnet.load_state_dict(torch.load("output/weights0.pt"))
-"""
+
+
 # Train
-dataset = ReadDataset('train_split.csv')
+dataset = ReadDataset("train_split.csv")
 # Transform to tensor
 X_train = torch.tensor(dataset.X.values).to(device).float()
 y_train = torch.tensor(dataset.y.values).to(device).float()
@@ -36,13 +37,11 @@ train_out = nnet.forward(X_train)
 # Store the predictions
 train = pd.read_csv("train_split.csv", index_col="Id")
 train["Predicted"] = train_out.detach().numpy()
-file_name = (
-    "submissions/train_split_preds.csv"
-)
+file_name = "submissions/train_split_preds.csv"
 train[["Predicted"]].to_csv(file_name)
 
 # Validation
-dataset = ReadDataset('validation.csv')
+dataset = ReadDataset("validation.csv")
 # Transform to tensor
 X_val = torch.tensor(dataset.X.values).to(device).float()
 y_val = torch.tensor(dataset.y.values).to(device).float()
@@ -54,11 +53,8 @@ val_out = nnet.forward(X_val)
 # Store the predictions
 validation = pd.read_csv("validation.csv", index_col="Id")
 validation["Predicted"] = val_out.detach().numpy()
-file_name = (
-    "submissions/validation_preds.csv"
-)
-train[["Predicted"]].to_csv(file_name)
-"""
+file_name = "submissions/validation_preds.csv"
+validation[["Predicted"]].to_csv(file_name)
 
 # Test
 test = ReadDataset("test.csv", for_test=True)
@@ -74,3 +70,4 @@ file_name = (
     "submissions/nn_" + str(date.today().month) + "_" + str(date.today().day) + ".csv"
 )
 test[["Predicted"]].to_csv(file_name)
+print("done")
