@@ -236,16 +236,28 @@ dls = TabularDataLoaders.from_df(
     cont_names=list(test.columns),
     y_names="signal",
     valid_idx=list(X_valid.index),
-    bs=64
+    bs=1024
 )
 
-roc_auc = RocAuc()
-learn = tabular_learner(dls, metrics=[roc_auc, accuracy])
+learn = tabular_learner(
+    dls,
+    y_range=(0, 1),
+    loss_func=F.binary_cross_entropy
+)
 
-print(learn.fit_one_cycle(1))
+learn.lr_find()
+
+learn.fit_one_cycle(10)
 
 valid_dl = learn.dls.test_dl(X_valid)
-
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy()
 
 print(roc_auc_score(y_valid, valid_preds))
+
+test_dl = learn.dls.test_dl(X_test)
+test_preds = learn.get_preds(dl=test_dl)[0].numpy()
+
+test_raw['Predicted'] = test_preds
+
+test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn.csv', index=False)
+
