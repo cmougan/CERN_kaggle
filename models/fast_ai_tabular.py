@@ -78,19 +78,25 @@ valid_ids = train_raw.iloc[X_valid.index, :].Id
 train_dl = learn.dls.test_dl(X_train)
 train_ids = train_raw.iloc[X_train.index, :].Id
 
-# lr_min, lr_steep = (learn.lr_find())
-# print(lr_min)
-# print(lr_steep)
 n_cycles = 10
+start_cycle = 4
+n_epochs = 20
+
+valid_preds = learn.get_preds(dl=valid_dl)[0].numpy() * 0
 
 for i in range(n_cycles):
     print("-" * 20)
     print(f"Cycle {i}")
-    learn.fit_one_cycle(20, lr_max=1e-3)
+    learn.fit_one_cycle(n_epochs, lr_max=1e-3)
 
-# Get valid predictions
+    if i >= start_cycle:
 
-valid_preds = learn.get_preds(dl=valid_dl)[0].numpy()
+        # Get valid predictions
+        valid_preds += learn.get_preds(dl=valid_dl)[0].numpy()
+
+        print(f"Validation AUC: {roc_auc_score(y_valid, valid_preds):.4f}")
+
+valid_preds = valid_preds / (n_cycles - start_cycle)
 
 valid_scores = pd.DataFrame(dict(
     Id=valid_ids.values,
@@ -98,8 +104,6 @@ valid_scores = pd.DataFrame(dict(
 ))
 
 valid_scores.to_csv('data/blend/valid_fastai_nn.csv', index=False)
-
-print(f"Validation AUC: {roc_auc_score(y_valid, valid_preds):.4f}")
 
 # Get train predictions
 
@@ -132,12 +136,19 @@ learn_full = tabular_learner(
     loss_func=F.binary_cross_entropy
 )
 
+test_dl = learn_full.dls.test_dl(X_test)
+test_preds = learn_full.get_preds(dl=test_dl)[0].numpy() * 0
+
 for i in range(n_cycles):
     print(f"Cycle {i}")
-    learn_full.fit_one_cycle(20, lr_max=1e-3)
+    learn_full.fit_one_cycle(n_epochs, lr_max=1e-3)
 
-test_dl = learn_full.dls.test_dl(X_test)
-test_preds = learn_full.get_preds(dl=test_dl)[0].numpy()
+    if i >= start_cycle:
+
+        # Get valid predictions
+        test_preds += learn_full.get_preds(dl=test_dl)[0].numpy()
+
+test_preds = test_preds / (n_cycles - start_cycle)
 
 test_raw['Predicted'] = test_preds
 
