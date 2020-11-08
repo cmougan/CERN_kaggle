@@ -70,20 +70,27 @@ learn = tabular_learner(
     loss_func=F.binary_cross_entropy
 )
 
+# Prep train and valid indexes
+
+valid_dl = learn.dls.test_dl(X_valid)
+valid_ids = train_raw.iloc[X_valid.index, :].Id
+
+train_dl = learn.dls.test_dl(X_train)
+train_ids = train_raw.iloc[X_train.index, :].Id
+
 # lr_min, lr_steep = (learn.lr_find())
 # print(lr_min)
 # print(lr_steep)
+n_cycles = 10
 
-for i in range(5):
+for i in range(n_cycles):
     print("-" * 20)
     print(f"Cycle {i}")
     learn.fit_one_cycle(20, lr_max=1e-3)
 
 # Get valid predictions
 
-valid_dl = learn.dls.test_dl(X_valid)
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy()
-valid_ids = train_raw.iloc[X_valid.index, :].Id
 
 valid_scores = pd.DataFrame(dict(
     Id=valid_ids.values,
@@ -96,9 +103,7 @@ print(f"Validation AUC: {roc_auc_score(y_valid, valid_preds):.4f}")
 
 # Get train predictions
 
-train_dl = learn.dls.test_dl(X_train)
 train_preds = learn.get_preds(dl=train_dl)[0].numpy()
-train_ids = train_raw.iloc[X_train.index, :].Id
 
 train_scores = pd.DataFrame(dict(
     Id=train_ids.values,
@@ -127,7 +132,7 @@ learn_full = tabular_learner(
     loss_func=F.binary_cross_entropy
 )
 
-for i in range(5):
+for i in range(n_cycles):
     print(f"Cycle {i}")
     learn_full.fit_one_cycle(20, lr_max=1e-3)
 
