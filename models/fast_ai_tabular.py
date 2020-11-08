@@ -9,7 +9,6 @@ import random
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.preprocessing import QuantileTransformer
 
 from utils.features import feature_engineering
