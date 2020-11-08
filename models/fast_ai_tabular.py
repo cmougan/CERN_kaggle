@@ -236,7 +236,7 @@ dls = TabularDataLoaders.from_df(
     cont_names=list(test.columns),
     y_names="signal",
     valid_idx=list(X_valid.index),
-    bs=1024
+    bs=2048
 )
 
 learn = tabular_learner(
@@ -247,7 +247,9 @@ learn = tabular_learner(
 
 learn.lr_find()
 
-learn.fit_one_cycle(10)
+learn.fit_one_cycle(20)
+learn.fit_one_cycle(20)
+learn.fit_one_cycle(20)
 
 valid_dl = learn.dls.test_dl(X_valid)
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy()
