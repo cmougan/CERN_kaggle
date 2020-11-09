@@ -5,10 +5,10 @@ from sklearn.metrics import roc_auc_score
 train_raw = pd.read_csv("data/train.csv").drop(columns="BUTTER")
 
 lgbm_df = pd.read_csv('data/blend/valid_lgbm.csv')
-fastai_df = pd.read_csv('data/blend/valid_fastai_nn.csv')
+fastai_df = pd.read_csv('data/blend/valid_fastai_nn_single.csv')
 
 lgbm_submission = pd.read_csv("submissions/more_features_lgbm.csv")
-fastai_submission = pd.read_csv("submissions/fastai_nn.csv")
+fastai_submission = pd.read_csv("submissions/fastai_nn_single.csv")
 
 
 train_raw = (train_raw
