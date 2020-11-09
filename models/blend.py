@@ -28,29 +28,19 @@ for w_fastai in np.linspace(0, 1, 50):
     fastai_contr_single = fastai_df_single["prediction"] ** (w_fastai / 2)
     lgmb_contr = lgbm_df["prediction"] ** (1 - w_fastai)
 
-    fastai_contr_sum = fastai_df["prediction"] * (w_fastai / 2)
-    fastai_contr_single_sum = fastai_df_single["prediction"] * (w_fastai / 2)
-    lgmb_contr_sum = lgbm_df["prediction"] * (1 - w_fastai)
-
     roc = roc_auc_score(
         valid_target.signal,
-        fastai_contr * fastai_contr_single * lgmb_contr
+        fastai_contr + fastai_contr_single + lgmb_contr
     )
     print(f"roc product {roc:.4f}")
-
-    roc = roc_auc_score(
-        valid_target.signal,
-        fastai_contr_sum + fastai_contr_single_sum + lgmb_contr_sum
-    )
-    print(f"roc sum {roc:.4f}")
 
 
 blend_submission = lgbm_submission.copy()
 
 blend_submission["Predicted"] = \
-    (lgbm_submission["Predicted"] ** 0.2) * \
-    (fastai_submission_single["Predicted"] ** 0.4) * \
-    (fastai_submission["Predicted"] ** 0.4)
+    (lgbm_submission["Predicted"] ** 0.1) + \
+    (fastai_submission_single["Predicted"] ** 0.45) + \
+    (fastai_submission["Predicted"] ** 0.45)
 
 blend_submission.to_csv(
     "submissions/blend_lgbm_fastai_4040.csv",
