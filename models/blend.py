@@ -26,20 +26,11 @@ for w_fastai in np.linspace(0, 1, 50):
     fastai_contr = fastai_df["prediction"] ** (w_fastai)
     lgmb_contr = lgbm_df["prediction"] ** (1 - w_fastai)
 
-    fastai_contr_sum = fastai_df["prediction"] * (w_fastai)
-    lgmb_contr_sum = lgbm_df["prediction"] * (1 - w_fastai)
-
     roc = roc_auc_score(
         valid_target.signal,
         fastai_contr * lgmb_contr
     )
     print(f"roc product {roc:.4f}")
-
-    roc = roc_auc_score(
-        valid_target.signal,
-        fastai_contr_sum + lgmb_contr_sum
-    )
-    print(f"roc sum {roc:.4f}")
 
 
 blend_submission = lgbm_submission.copy()
