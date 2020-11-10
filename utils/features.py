@@ -195,16 +195,16 @@ class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
 
     def __init__(
             self,
-            columns,
+            columns_dict,
             normalize=True,
             copy=True,
     ):
         self.normalize = normalize
-        self.columns = columns
+        self.columns_dict = columns_dict
         self.copy = copy
         self.scaler = StandardScaler()
-        self.group_means = None
-        self.target_groups = None
+        self.group_means_dict = {}
+        self.target_groups_dict = {}
 
     def fit(self, X, y=None):
         """
@@ -212,7 +212,6 @@ class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
         # X = check_array(
         #     X, copy=True, force_all_finite=False, estimator=self
         # )
-
         X_ = X.copy()
 
         if self.normalize:
@@ -223,26 +222,45 @@ class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
 
         X_["target___"] = y
 
-        mean_dict = {col: 'mean' for col in self.columns}
+        for key in self.columns_dict:
 
-        self.group_means = X_.groupby("target___").agg(mean_dict).reset_index()
-        self.target_groups = self.group_means.target___.to_list()
+            mean_dict = {col: 'mean' for col in self.columns_dict[key]}
+
+            self.group_means_dict[key] = (
+                X_
+                    .groupby("target___")
+                    .agg(mean_dict)
+                    .reset_index()
+            )
+
+            self.target_groups_dict[key] = (
+                self
+                    .group_means_dict[key]
+                    .target___
+                    .to_list()
+            )
 
         return self
 
     def transform(self, X):
         """
         """
-        check_is_fitted(self, "group_means")
+        check_is_fitted(self, "group_means_dict")
 
-        # This, we can vectorize
-        for target in self.target_groups:
-            match = self.group_means.target___ == target
-            centroid = self.group_means.loc[match, self.columns]
-            acum = 0
-            for col in self.columns:
-                acum += (centroid[col].values[0] - X[col]) ** 2
-            X[f"target__distance__{target}"] = acum
+        for key in self.columns_dict:
+
+            # This, we can vectorize
+            for target in self.target_groups_dict[key]:
+                match = self.group_means_dict[key].target___ == target
+                centroid = self.group_means_dict[key].loc[
+                    match,
+                    self.columns_dict[key]
+                ]
+                acum = 0
+                for col in self.columns_dict[key]:
+                    acum += (centroid[col].values[0] - X[col]) ** 2
+
+                X[f"target__distance__{key}__{target}"] = acum
 
         return X
 
@@ -250,10 +268,11 @@ class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
 X = pd.DataFrame(
     dict(
         a=[1, 2, 3],
-        b=[1, 0, 1]
+        b=[1, 0, 1],
+        c=[2, 0, 2]
     )
 )
 
 y = [1, 0, 1]
 
-print(DistanceDepthFeaturizer(['a', 'b'], normalize=False).fit_transform(X, y))
+print(DistanceDepthFeaturizer({"ab": ['a', 'b'], "bc": ['b', 'c']}).fit_transform(X, y))
