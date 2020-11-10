@@ -265,14 +265,14 @@ class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
         return X
 
 
-X = pd.DataFrame(
-    dict(
-        a=[1, 2, 3],
-        b=[1, 0, 1],
-        c=[2, 0, 2]
-    )
-)
-
-y = [1, 0, 1]
-
-print(DistanceDepthFeaturizer({"ab": ['a', 'b'], "bc": ['b', 'c']}).fit_transform(X, y))
+# X = pd.DataFrame(
+#     dict(
+#         a=[1, 2, 3],
+#         b=[1, 0, 1],
+#         c=[2, 0, 2]
+#     )
+# )
+#
+# y = [1, 0, 1]
+#
+# print(DistanceDepthFeaturizer({"ab": ['a', 'b'], "bc": ['b', 'c']}).fit_transform(X, y))

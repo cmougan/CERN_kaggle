@@ -8,15 +8,16 @@ import numpy as np
 import random
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score,auc
-from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import QuantileTransformer
+from sklearn.pipeline import Pipeline
 
 
 from lightgbm import LGBMClassifier
 # from catboost import CatBoostClassifier
 
-from utils.features import feature_engineering
+from utils.features import feature_engineering, DistanceDepthFeaturizer
 
 random.seed(42)
 np.random.seed(42)
@@ -69,10 +70,29 @@ lgb = LGBMClassifier(
     n_jobs=-1,
     # monotone_constraints_method="intermediate"
 )
-lgb.fit(X_train, y_train)
 
-pred_valid = lgb.predict_proba(X_valid)[:, 1]
-pred_train = lgb.predict_proba(X_train)[:, 1]
+dd = DistanceDepthFeaturizer(
+    {
+        "mom_eta": ["total_momentum_x2_q", "Kplus_ETA_q"],
+        "mom_mom": ["total_momentum_x1_q", "total_momentum_x2_q"],
+        "mom_mom_2": ["total_momentum_x1_q", "total_momentum_y2p_q"],
+        # "mom_mom_3": ["total_momentum_x2p_q", "total_momentum_x2_q"],
+        # "angle_mom": ["Kst_892_0_cosThetaH_q", "total_momentum_x1_q"],
+    }
+)
+
+pipe = Pipeline(
+    [
+        ("dd", dd),
+        ("lgb", lgb),
+    ]
+)
+
+
+pipe.fit(X_train, y_train)
+
+pred_valid = pipe.predict_proba(X_valid)[:, 1]
+pred_train = pipe.predict_proba(X_train)[:, 1]
 
 
 roc_valid = roc_auc_score(y_valid, pred_valid)
@@ -109,8 +129,8 @@ valid_scores = pd.DataFrame(dict(
     prediction=pred_valid
 ))
 
-train_scores.to_csv('data/blend/train_lgbm.csv', index=False)
-valid_scores.to_csv('data/blend/valid_lgbm.csv', index=False)
+train_scores.to_csv('data/blend/train_lgbm_dd.csv', index=False)
+valid_scores.to_csv('data/blend/valid_lgbm_dd.csv', index=False)
 
 # CV and full training
 
@@ -130,7 +150,7 @@ test_predictions = lgb.predict_proba(X_test)[:, 1]
 
 test_raw['Predicted'] = test_predictions
 
-test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm.csv', index=False)
+test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm_dd.csv', index=False)
 
 
 """
