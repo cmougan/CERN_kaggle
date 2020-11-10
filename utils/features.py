@@ -1,6 +1,13 @@
 import pandas as pd
 import numpy as np
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_X_y
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_array,
+)
+
 
 def feature_engineering(all_df: pd.DataFrame) -> pd.DataFrame:
 
@@ -176,3 +183,77 @@ def feature_engineering(all_df: pd.DataFrame) -> pd.DataFrame:
     all_df["total_momentum_p_y_abs"] = np.abs(all_df["total_momentum_p_y"])
 
     return all_df
+
+import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils import check_array
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
+    """
+    """
+
+    def __init__(
+            self,
+            columns,
+            normalize=True,
+            copy=True,
+    ):
+        self.normalize = normalize
+        self.columns = columns
+        self.copy = copy
+        self.scaler = StandardScaler()
+        self.group_means = None
+        self.target_groups = None
+
+    def fit(self, X, y=None):
+        """
+        """
+        # X = check_array(
+        #     X, copy=True, force_all_finite=False, estimator=self
+        # )
+
+        X_ = X.copy()
+
+        if self.normalize:
+            X_ = self.scaler.fit_transform(X_)
+
+        X_ = pd.DataFrame(X_)
+        X_.columns = X.columns
+
+        X_["target___"] = y
+
+        mean_dict = {col: 'mean' for col in self.columns}
+
+        self.group_means = X_.groupby("target___").agg(mean_dict).reset_index()
+        self.target_groups = self.group_means.target___.to_list()
+
+        return self
+
+    def transform(self, X):
+        """
+        """
+        check_is_fitted(self, "group_means")
+
+        # This, we can vectorize
+        for target in self.target_groups:
+            match = self.group_means.target___ == target
+            centroid = self.group_means.loc[match, self.columns]
+            acum = 0
+            for col in self.columns:
+                acum += (centroid[col].values[0] - X[col]) ** 2
+            X[f"target__distance__{target}"] = acum
+
+        return X
+
+
+X = pd.DataFrame(
+    dict(
+        a=[1, 2, 3],
+        b=[1, 0, 1]
+    )
+)
+
+y = [1, 0, 1]
+
+print(DistanceDepthFeaturizer(['a', 'b'], normalize=False).fit_transform(X, y))
