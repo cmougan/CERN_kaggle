@@ -22,8 +22,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Neural Network
 dataset = ReadDataset("train_split.csv")
-nnet = ResNet(dataset.__shape__()).to(device)
-nnet.load_state_dict(torch.load("output/weights0.pt"))
+nnet = Net(dataset.__shape__()).to(device)
+nnet.load_state_dict(torch.load("output/weights_final.pt"))
 
 
 # Train
@@ -54,7 +54,7 @@ print("Results in validation AUC: ", evaluate_auc(nnet, X_val, y_val))
 print("Results in validation BCE: ", evaluate_log_loss(nnet, X_val, y_val))
 
 val_out = nnet.forward(X_val)
-'''
+
 # Store the predictions
 validation = pd.read_csv("validation.csv", index_col="Id")
 validation["Predicted"] = val_out.detach().numpy()
@@ -76,4 +76,3 @@ file_name = (
 )
 test[["Predicted"]].to_csv(file_name)
 print("done")
-'''

@@ -26,7 +26,7 @@ tic = time.time()
 
 # Read data
 train_file = "train_split.csv"
-validation_file = "validation.csv"
+validation_file = "valid_split.csv"
 trainset = ReadDataset(train_file)
 testset = ReadDataset(validation_file)
 
