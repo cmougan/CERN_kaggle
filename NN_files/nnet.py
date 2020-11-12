@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from gbfeatures import GradientBoostingFeatureGenerator
+#from gbfeatures import GradientBoostingFeatureGenerator
 from sklearn.externals import joblib
 import random
 import os
@@ -38,7 +38,7 @@ class ReadDataset(Dataset):
         if for_test == False:
             # Save target and predictors
             self.X = self.df.drop(self.target, axis=1)
-            self.y = self.df[[self.target]]
+            self.y = self.df[self.target]
 
         else:
             self.X = self.df
@@ -60,7 +60,10 @@ class ReadDataset(Dataset):
         ## Scale data
         self.X = pd.DataFrame(self.scaler.transform(self.X), columns=self.X.columns)
 
+
+        '''
         ## GB features
+        
         sample_size = int(self.X.shape[0]/10)
         if os.path.isfile("output/gbFreat.save") == False:
             self.gb_feat = GradientBoostingFeatureGenerator()
@@ -69,9 +72,8 @@ class ReadDataset(Dataset):
         else:
             self.gb_feat = joblib.load("output/gbFeat.save")
         self.X = pd.DataFrame(self.gb_feat.transform(self.X))
+        '''
 
-    def __len__(self):
-        return len(self.df)
 
     def transform(self, df):
         # Did not work
@@ -454,6 +456,9 @@ class ReadDataset(Dataset):
         all_df["total_momentum_p_y_abs"] = np.abs(all_df["total_momentum_p_y"])
 
         return all_df
+
+    def __len__(self):
+        return len(self.X)
 
     def __shape__(self):
         return self.X.shape[1]

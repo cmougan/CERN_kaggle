@@ -32,7 +32,10 @@ testset = ReadDataset(validation_file)
 
 # Data loaders
 trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
-testloader = DataLoader(testset, batch_size=5_000, shuffle=False)
+
+# Test set
+X_test = torch.tensor(testset.X.values)
+y_test = torch.tensor(testset.y.values)
 
 
 # Use gpu if available
@@ -54,12 +57,6 @@ optimizer = optim.Adam(
 # Train the net
 loss_per_iter = []
 loss_per_batch = []
-
-# Comparing training to test
-dataiter = iter(testloader)
-X_test, y_test = dataiter.next()
-X_test = X_test.to(device)
-y_test = y_test.to(device)
 
 
 # Train the net
