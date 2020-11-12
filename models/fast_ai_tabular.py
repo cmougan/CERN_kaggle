@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import QuantileTransformer
 
-from utils.features import feature_engineering
+from utils.features import feature_engineering, feature_engineering_cls
 from fastai.tabular.all import *
 
 
@@ -26,7 +26,8 @@ test_raw['train'] = 0
 
 all_df = pd.concat([train_raw, test_raw]).reset_index(drop=True)
 
-
+all_df.columns = [col.replace(" ", "") for col in all_df.columns]
+all_df = feature_engineering_cls(all_df)
 all_df = feature_engineering(all_df)
 
 transformed_values = QuantileTransformer().fit_transform(all_df)

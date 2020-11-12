@@ -276,3 +276,132 @@ class DistanceDepthFeaturizer(TransformerMixin, BaseEstimator):
 # y = [1, 0, 1]
 #
 # print(DistanceDepthFeaturizer({"ab": ['a', 'b'], "bc": ['b', 'c']}).fit_transform(X, y))
+
+
+def feature_engineering_cls(df: pd.DataFrame) -> pd.DataFrame:
+    # Did not work
+    df["Kst_892_0_cosThetaH_arc"] = np.arccos(df["Kst_892_0_cosThetaH"])
+    df["Kst_892_0_cosThetaH_arc_sin"] = np.sin(df.Kst_892_0_cosThetaH_arc)
+
+    df["Kplu_pXKst_892costheta"] = df["Kplus_P"] * df["Kst_892_0_cosThetaH"]
+
+    df["momentum_by_shortest_dist"] = df["Kplus_P"] / df["Kplus_IP_OWNPV"]
+
+    df["momentum_sum"] = df["B_PT"] + df["Kplus_P"] + df["gamma_PT"]
+
+    # Worked individually
+    df["Kplu_p_div_Kst_892costheta"] = df["Kplus_P"] / df["Kst_892_0_cosThetaH"]
+
+    # ETA (estimated time of arrival) inversions -- worked
+    df["Kplus_ETA_inv"] = 1 / df["Kplus_ETA"]
+    df["piminus_ETA_inv"] = 1 / df["piminus_ETA"]
+
+    # Momentum
+
+    df["total_mom_2"] = df["B_PT"] ** 2 + df["gamma_PT"] ** 2 + df["Kplus_P"] ** 2
+    df["total_mom_sum"] = df["B_PT"] + df["gamma_PT"] + df["Kplus_P"]
+
+    # All mom ratios worked together
+    df["mom_rat_1"] = df["B_PT"] / df["Kplus_P"]
+    df["mom_rat_2"] = df["B_PT"] / df["gamma_PT"]
+
+    df["mom_rat_3"] = df["gamma_PT"] / df["B_PT"]
+    df["mom_rat_4"] = df["gamma_PT"] / df["Kplus_P"]
+
+    df["mom_rat_5"] = df["Kplus_P"] / df["B_PT"]
+    df["mom_rat_6"] = df["Kplus_P"] / df["gamma_PT"]
+
+    df["ThetaH"] = np.arccos(df["Kst_892_0_cosThetaH"])
+
+    df["Kplus_P_x"] = df["Kplus_P"] * np.sin(df["ThetaH"])
+    df["Kplus_P_y"] = df["Kplus_P"] * np.cos(df["ThetaH"])
+
+    df["mom_consev1"] = df["gamma_PT"] ** 2 + df["Kplus_P"] ** 2 - df["B_PT"] ** 2
+    df["mom_consev1_1"] = ((df["gamma_PT"] + df["Kplus_P"])) ** 2 - df["B_PT"] ** 2
+
+    # B meson ratios
+    df["mesB_ratio_1"] = df["B_FDCHI2_OWNPV"] / df["B_IPCHI2_OWNPV"]
+    df["mesB_ratio_2"] = df["B_FDCHI2_OWNPV"] / df["B_PT"]
+
+    df["mesB_ratio_3"] = df["B_IPCHI2_OWNPV"] / df["B_PT"]
+    df["mesB_ratio_4"] = df["B_IPCHI2_OWNPV"] / df["B_PT"]
+
+    df["mesB_ratio_5"] = df["B_PT"] / df["B_IPCHI2_OWNPV"]
+    df["mesB_ratio_6"] = df["B_PT"] / df["B_FDCHI2_OWNPV"]
+
+    # Neither Improved neither worst
+    df["kst_thetaH"] = np.arccos(df.Kst_892_0_cosThetaH)  # * 180 / np.pi
+    df["kst_thetaH_sin"] = np.sin(df["kst_thetaH"])
+    df["kst_thetaH_cos"] = np.cos(df["kst_thetaH"])
+    df["kst_thetaH_sin_cos"] = np.sin(df["kst_thetaH"]) - np.cos(df["kst_thetaH"])
+    df["kst_thetaH_tan"] = np.tan(df["kst_thetaH"])
+    df["kst_thetaH_exp"] = np.exp(df["kst_thetaH"])
+    df["kst_thetaH_exp_1"] = np.exp(-df["kst_thetaH"])
+
+    df["B_DIRA_OWNPV_angle"] = np.arccos(df["B_DIRA_OWNPV"])  # * 180 / np.pi
+    df["B_DIRA_OWNPV__cos"] = np.cos(df["B_DIRA_OWNPV_angle"])
+    df["B_DIRA_OWNPV__sin"] = np.sin(df["B_DIRA_OWNPV_angle"])
+    df["B_DIRA_OWNPV__tan"] = np.tan(df["B_DIRA_OWNPV_angle"])
+    df["B_DIRA_OWNPV__sin_cos"] = np.sin(df["B_DIRA_OWNPV_angle"]) - np.cos(
+        df["B_DIRA_OWNPV_angle"]
+    )
+    df["B_DIRA_OWNPV_exp"] = np.exp(df["B_DIRA_OWNPV_angle"])
+    df["B_DIRA_OWNPV_exp_1"] = np.exp(-df["B_DIRA_OWNPV_angle"])
+
+    # Momentum multiplication
+    df["mom1_exp"] = df["mom_rat_1"] * df["B_DIRA_OWNPV_exp"]
+    df["mom2_exp"] = df["mom_rat_2"] * df["B_DIRA_OWNPV_exp"]
+    df["mom3_exp"] = df["mom_rat_3"] * df["B_DIRA_OWNPV_exp"]
+    df["mom4_exp"] = df["mom_rat_4"] * df["B_DIRA_OWNPV_exp"]
+    df["mom5_exp"] = df["mom_rat_5"] * df["B_DIRA_OWNPV_exp"]
+    df["mom6_exp"] = df["mom_rat_6"] * df["B_DIRA_OWNPV_exp"]
+    df["mom7_exp"] = df["B_PT"] * df["B_DIRA_OWNPV_exp"]
+    df["mom8_exp"] = df["Kplus_P"] * df["B_DIRA_OWNPV_exp"]
+    df["mom9_exp"] = df["gamma_PT"] * df["B_DIRA_OWNPV_exp"]
+
+    df["mom11_exp"] = df["mom_rat_1"] * df["kst_thetaH"]
+    df["mom22_exp"] = df["mom_rat_2"] * df["kst_thetaH"]
+    df["mom33_exp"] = df["mom_rat_3"] * df["kst_thetaH"]
+    df["mom44_exp"] = df["mom_rat_4"] * df["kst_thetaH"]
+    df["mom55_exp"] = df["mom_rat_5"] * df["kst_thetaH"]
+    df["mom66_exp"] = df["mom_rat_6"] * df["kst_thetaH"]
+    df["mom77_exp"] = df["B_PT"] * df["kst_thetaH"]
+    df["mom88_exp"] = df["Kplus_P"] * df["kst_thetaH"]
+    df["mom99_exp"] = df["gamma_PT"] * df["kst_thetaH"]
+
+    df["Kplus_ETA_2"] = df["Kplus_ETA"] ** 2
+    df["Kplus_ETA_exp"] = np.exp(df["Kplus_ETA"])
+    df["Kplus_ETA_theta"] = df["Kplus_ETA"] * df["kst_thetaH"]
+    df["Kplus_ETA_div_theta"] = df["Kplus_ETA"] / df["kst_thetaH"]
+    df["Kplus_ETA_theta_sin"] = df["Kplus_ETA"] * df["kst_thetaH_sin"]
+    df["Kplus_ETA_theta_tan"] = df["Kplus_ETA"] * df["kst_thetaH_tan"]
+
+    df["piminus_ETA_2"] = df["piminus_ETA"] ** 2
+    df["piminus_ETA_exp"] = np.exp(df["piminus_ETA"])
+    df["piminus_ETA_theta"] = df["piminus_ETA"] * df["kst_thetaH"]
+    df["piminus_ETA_div_theta"] = df["piminus_ETA"] / df["kst_thetaH"]
+    df["piminus_ETA_theta_sin"] = df["piminus_ETA"] * df["kst_thetaH_sin"]
+    df["piminus_ETA_theta_tan"] = df["piminus_ETA"] * df["kst_thetaH_tan"]
+
+    # Improves
+    df["Kplus_by_eta"] = df["Kplus_P"] / df["Kplus_ETA"]
+
+    df["Kplus_piminus_by_eta"] = df["Kplus_P"] / df["piminus_ETA"]
+
+    df["ETA_add"] = df["Kplus_ETA"] + df["piminus_ETA"]
+    df["ETA_rest"] = df["Kplus_ETA"] - df["piminus_ETA"]
+    df["ETA_mult"] = df["Kplus_ETA"] * df["piminus_ETA"]
+    df["ETA_inv"] = df["Kplus_ETA"] / df["piminus_ETA"]
+    df["ETA_inv1"] = df["piminus_ETA"] / df["Kplus_ETA"]
+
+    df["Kplus_ETA_inv"] = df["Kplus_ETA"]
+    df["piminus_ETA_inv"] = df["piminus_ETA"]
+
+    df["ETA_add_inv"] = df["Kplus_ETA_inv"] + df["piminus_ETA_inv"]
+    df["ETA_rest_inv"] = df["Kplus_ETA_inv"] - df["piminus_ETA_inv"]
+    df["ETA_mult_inv"] = df["Kplus_ETA_inv"] * df["piminus_ETA_inv"]
+    df["ETA_inv_inv"] = df["Kplus_ETA_inv"] / df["piminus_ETA_inv"]
+    df["ETA_inv1_inv"] = df["piminus_ETA_inv"] / df["Kplus_ETA_inv"]
+
+    df = df
+    return df
