@@ -17,7 +17,7 @@ from sklearn.pipeline import Pipeline
 from lightgbm import LGBMClassifier
 # from catboost import CatBoostClassifier
 
-from utils.features import feature_engineering, DistanceDepthFeaturizer
+from utils.features import feature_engineering, feature_engineering_cls, DistanceDepthFeaturizer
 
 random.seed(42)
 np.random.seed(42)
@@ -30,6 +30,8 @@ test_raw['train'] = 0
 
 all_df = pd.concat([train_raw, test_raw]).reset_index(drop=True)
 
+all_df.columns = [col.replace(" ", "") for col in all_df.columns]
+all_df = feature_engineering_cls(all_df)
 all_df = feature_engineering(all_df)
 
 transformed_values = QuantileTransformer().fit_transform(all_df)
