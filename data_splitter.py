@@ -1,26 +1,15 @@
 import pandas as pd
-import numpy as np
 import random
+import numpy as np
+np.random.seed(0)
+random.seed(0)
 
-from sklearn.model_selection import train_test_split
 
+df = pd.read_csv('train.csv',index_col='Id')
+df.columns = df.columns.str.replace(" ", "")
+msk = np.random.rand(len(df)) < 0.8
+train = df[msk]
+validation = df[~msk]
 
-random.seed(42)
-np.random.seed(42)
-
-train_raw = pd.read_csv("train.csv")#.drop(columns="BUTTER")
-
-X_full = train_raw.drop(columns="signal")
-y_full = train_raw.signal
-
-X_train, X_valid, y_train, y_valid = train_test_split(
-    X_full,
-    y_full,
-    stratify=train_raw.signal
-)
-
-X_train["signal"] = y_train
-X_valid["signal"] = y_valid
-
-X_train.to_csv("train_split.csv", index=False)
-X_valid.to_csv("valid_split.csv", index=False)
+train.to_csv("train_split.csv", index=False)
+validation.to_csv("valid_split.csv", index=False)
