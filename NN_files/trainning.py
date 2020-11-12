@@ -27,8 +27,8 @@ tic = time.time()
 # Read data
 train_file = "train_split.csv"
 validation_file = "valid_split.csv"
-trainset = ReadDataset(train_file)
-testset = ReadDataset(validation_file)
+trainset = ReadDataset(train_file, gradient_boosting_features=True)
+testset = ReadDataset(validation_file, gradient_boosting_features=True)
 
 # Data loaders
 trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
@@ -36,6 +36,8 @@ trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
 # Test set
 X_test = torch.tensor(testset.X.values)
 y_test = torch.tensor(testset.y.values)
+print(trainset.X.shape)
+print(testset.X.shape)
 
 
 # Use gpu if available

@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-#from gbfeatures import GradientBoostingFeatureGenerator
+from gbfeatures import GradientBoostingFeatureGenerator
 from sklearn.externals import joblib
 import random
 import os
@@ -18,7 +18,7 @@ random.seed(0)
 class ReadDataset(Dataset):
     """CERN kaagle dataset."""
 
-    def __init__(self, csv_file, for_test=False):
+    def __init__(self, csv_file, for_test=False, gradient_boosting_features=False):
         """
         Args:
             csv_file (str): Path to the csv file with the students data.
@@ -29,6 +29,10 @@ class ReadDataset(Dataset):
 
         try:
             self.df = self.df.drop(columns=["Unnamed:0"])
+        except Exception:
+            pass
+        try:
+            self.df = self.df.drop(columns=["Id"])
         except Exception:
             pass
 
@@ -47,7 +51,6 @@ class ReadDataset(Dataset):
         self.X = self.transform(self.X)
         self.X = self.feature_engineering(self.X)
 
-
         # If the scaler does not exist create it
         if os.path.isfile("output/scaler.save") == False:
             self.scaler = MinMaxScaler()
@@ -60,20 +63,42 @@ class ReadDataset(Dataset):
         ## Scale data
         self.X = pd.DataFrame(self.scaler.transform(self.X), columns=self.X.columns)
 
+        # Gradient boosting features
+        if gradient_boosting_features:
+            self.X = self.gb_features()
+        print("data size", self.X.shape)
 
-        '''
+    def gb_features(self, sample_size=0.1):
         ## GB features
-        
-        sample_size = int(self.X.shape[0]/10)
-        if os.path.isfile("output/gbFreat.save") == False:
-            self.gb_feat = GradientBoostingFeatureGenerator()
-            self.gb_feat.fit(self.X.head(sample_size),self.y.head(sample_size))
-            joblib.dump(self.scaler, "output/gbFeat.save")
-        else:
-            self.gb_feat = joblib.load("output/gbFeat.save")
-        self.X = pd.DataFrame(self.gb_feat.transform(self.X))
-        '''
+        df = pd.read_csv("train.csv").drop(columns="BUTTER")
+        df.columns = df.columns.str.replace(" ", "")
 
+        try:
+            df = df.drop(columns=["Unnamed:0"])
+        except Exception:
+            pass
+        try:
+            df = df.drop(columns=["Id"])
+        except Exception:
+            pass
+
+        # Target
+        target = "signal"
+        X_fit = df.drop(target, axis=1)
+        y_fit = df[target]
+
+        # Create features
+        X_fit= self.transform(X_fit)
+        X_fit = self.feature_engineering(X_fit)
+
+        # GB features
+        sample_size = int(X_fit.shape[0] * sample_size)
+        gb_feat = GradientBoostingFeatureGenerator(random_state=0)
+        gb_feat.fit(X_fit.head(sample_size), y_fit.head(sample_size))
+
+        # Transform original data
+        self.X = pd.DataFrame(gb_feat.transform(self.X))
+        return self.X
 
     def transform(self, df):
         # Did not work
@@ -564,7 +589,7 @@ class ResNet(nn.Module):
         self.fc2 = nn.Linear(6 * input_dim, 3 * input_dim, bias=False)
         self.relu2 = nn.SELU()
         self.batchnorm2 = nn.BatchNorm1d(
-            3 * input_dim ,
+            3 * input_dim,
             eps=1e-05,
             momentum=0.1,
             affine=True,
@@ -575,7 +600,7 @@ class ResNet(nn.Module):
         self.fc3 = nn.Linear(3 * input_dim, 2 * input_dim, bias=False)
         self.relu3 = nn.SELU()
         self.batchnorm3 = nn.BatchNorm1d(
-            2 * input_dim+ input_dim,
+            2 * input_dim + input_dim,
             eps=1e-05,
             momentum=0.1,
             affine=True,
@@ -583,7 +608,7 @@ class ResNet(nn.Module):
         )
         self.drop3 = nn.Dropout(0.05, inplace=False)
 
-        self.fc4 = nn.Linear(2 * input_dim+ input_dim, 1 * input_dim, bias=False)
+        self.fc4 = nn.Linear(2 * input_dim + input_dim, 1 * input_dim, bias=False)
         self.relu4 = nn.SELU()
         self.batchnorm4 = nn.BatchNorm1d(
             input_dim, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True

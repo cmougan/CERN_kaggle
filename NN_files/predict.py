@@ -5,14 +5,16 @@ import matplotlib.pyplot as plt
 plt.style.use("seaborn")
 import pandas as pd
 import numpy as np
-from sklearn.metrics import roc_auc_score,log_loss
+from sklearn.metrics import roc_auc_score, log_loss
 import torch
 from datetime import date
-from nnet import ReadDataset, Net,ResNet
+from nnet import ReadDataset, Net, ResNet
 
 
 def evaluate_auc(model, data, label):
     return roc_auc_score(label.detach().numpy(), model(data.float()).detach().numpy())
+
+
 def evaluate_log_loss(model, data, label):
     return log_loss(label.detach().numpy(), model(data.float()).detach().numpy())
 
