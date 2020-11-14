@@ -66,6 +66,8 @@ y_valid = y_full[train['Id'].isin(valid_ids)]
 train = train.drop(columns=['train', 'Id', 'signal'])
 test = test.drop(columns=['train', 'Id', 'signal'])
 
+X_test.to_csv("data/stack/X_test.csv", index=False)
+X_valid.to_csv("data/stack/X_valid.csv", index=False)
 
 positive_cols = [
     "Kplus_P_y_q", "Kplus_P_x_q", "Kplus_P_q",
