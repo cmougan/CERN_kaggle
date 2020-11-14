@@ -14,7 +14,6 @@ from sklearn.preprocessing import QuantileTransformer
 from utils.features import feature_engineering, feature_engineering_cls
 from fastai.tabular.all import *
 
-
 random.seed(42)
 np.random.seed(42)
 
@@ -51,7 +50,7 @@ y_full = train.signal
 
 # Carlos split's
 train_ids = pd.read_csv('data/train_split.csv')['Id'].values
-valid_ids = pd.read_csv('data/validation.csv')['Id'].values
+valid_ids = pd.read_csv('data/valid_split.csv')['Id'].values
 
 X_train = X_full[train['Id'].isin(train_ids)]
 y_train = y_full[train['Id'].isin(train_ids)]
@@ -93,6 +92,7 @@ n_epochs = 20
 
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy() * 0
 
+print('Tranning starting')
 for i in range(n_cycles):
     print("-" * 20)
     print(f"Cycle {i}")
