@@ -42,18 +42,27 @@ transformed_df = transformed_df.drop(columns=keep_cols)
 # full_df = pd.concat([all_df, transformed_df], axis=1)
 full_df = pd.concat([all_df[keep_cols], transformed_df], axis=1)
 
-train = full_df[full_df.train == 1].drop(columns=['train', 'Id'])
-test = full_df[full_df.train != 1].drop(columns=['train', 'Id', 'signal'])
+train = full_df[full_df.train == 1]
+test = full_df[full_df.train != 1]
 
-X_full = train.drop(columns="signal")
-X_test = test.copy()
+X_full = train.drop(columns=['train', 'Id', 'signal'])
+X_test = test.copy().drop(columns=['train', 'Id', 'signal'])
 y_full = train.signal
 
-X_train, X_valid, y_train, y_valid = train_test_split(
-    X_full,
-    y_full,
-    stratify=train.signal
-)
+# Carlos split's
+train_ids = pd.read_csv('data/train_split.csv')['Id'].values
+valid_ids = pd.read_csv('data/validation.csv')['Id'].values
+
+X_train = X_full[train['Id'].isin(train_ids)]
+y_train = y_full[train['Id'].isin(train_ids)]
+
+X_valid = X_full[train['Id'].isin(valid_ids)]
+y_valid = y_full[train['Id'].isin(valid_ids)]
+
+train = train.drop(columns=['train', 'Id'])
+test = test.drop(columns=['train', 'Id', 'signal'])
+
+
 
 dls = TabularDataLoaders.from_df(
     train,
@@ -152,5 +161,5 @@ test_preds = test_preds / (n_cycles - start_cycle)
 
 test_raw['Predicted'] = test_preds
 
-test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn.csv', index=False)
+# test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn.csv', index=False)
 

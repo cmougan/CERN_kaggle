@@ -46,18 +46,26 @@ transformed_df = transformed_df.drop(columns=keep_cols)
 # full_df = pd.concat([all_df, transformed_df], axis=1)
 full_df = pd.concat([all_df[keep_cols], transformed_df], axis=1)
 
-train = full_df[full_df.train == 1].drop(columns=['train', 'Id'])
-test = full_df[full_df.train != 1].drop(columns=['train', 'Id', 'signal'])
+train = full_df[full_df.train == 1]
+test = full_df[full_df.train != 1]
 
-X_full = train.drop(columns="signal")
-X_test = test.copy()
+X_full = train.drop(columns=['train', 'Id', 'signal'])
+X_test = test.copy().drop(columns=['train', 'Id', 'signal'])
 y_full = train.signal
 
-X_train, X_valid, y_train, y_valid = train_test_split(
-    X_full, 
-    y_full, 
-    stratify=train.signal
-)
+# Carlos split's
+train_ids = pd.read_csv('data/train_split.csv')['Id'].values
+valid_ids = pd.read_csv('data/validation.csv')['Id'].values
+
+X_train = X_full[train['Id'].isin(train_ids)]
+y_train = y_full[train['Id'].isin(train_ids)]
+
+X_valid = X_full[train['Id'].isin(valid_ids)]
+y_valid = y_full[train['Id'].isin(valid_ids)]
+
+train = train.drop(columns=['train', 'Id', 'signal'])
+test = test.drop(columns=['train', 'Id', 'signal'])
+
 
 positive_cols = [
     "Kplus_P_y_q", "Kplus_P_x_q", "Kplus_P_q",
@@ -73,28 +81,10 @@ lgb = LGBMClassifier(
     # monotone_constraints_method="intermediate"
 )
 
-dd = DistanceDepthFeaturizer(
-    {
-        "mom_eta": ["total_momentum_x2_q", "Kplus_ETA_q"],
-        "mom_mom": ["total_momentum_x1_q", "total_momentum_x2_q"],
-        "mom_mom_2": ["total_momentum_x1_q", "total_momentum_y2p_q"],
-        # "mom_mom_3": ["total_momentum_x2p_q", "total_momentum_x2_q"],
-        # "angle_mom": ["Kst_892_0_cosThetaH_q", "total_momentum_x1_q"],
-    }
-)
+lgb.fit(X_train, y_train)
 
-pipe = Pipeline(
-    [
-        ("dd", dd),
-        ("lgb", lgb),
-    ]
-)
-
-
-pipe.fit(X_train, y_train)
-
-pred_valid = pipe.predict_proba(X_valid)[:, 1]
-pred_train = pipe.predict_proba(X_train)[:, 1]
+pred_valid = lgb.predict_proba(X_valid)[:, 1]
+pred_train = lgb.predict_proba(X_train)[:, 1]
 
 
 roc_valid = roc_auc_score(y_valid, pred_valid)
@@ -131,8 +121,8 @@ valid_scores = pd.DataFrame(dict(
     prediction=pred_valid
 ))
 
-train_scores.to_csv('data/blend/train_lgbm_dd.csv', index=False)
-valid_scores.to_csv('data/blend/valid_lgbm_dd.csv', index=False)
+train_scores.to_csv('data/blend/train_lgbm.csv', index=False)
+valid_scores.to_csv('data/blend/valid_lgbm.csv', index=False)
 
 # CV and full training
 
@@ -152,7 +142,7 @@ test_predictions = lgb.predict_proba(X_test)[:, 1]
 
 test_raw['Predicted'] = test_predictions
 
-test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm_dd.csv', index=False)
+# test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm.csv', index=False)
 
 
 """
