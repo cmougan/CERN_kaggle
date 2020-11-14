@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 import random
-from sklearn.metrics import roc_auc_score
-from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, make_scorer
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
+
+from utils.auc import OptimizeAUC, rank_mean
 
 random.seed(42)
 np.random.seed(42)
@@ -37,36 +39,48 @@ def logit(x):
 
 predictions_df_valid = pd.DataFrame(
     dict(
-        lgbm=logit(lgbm_df["prediction"].values),
+        # lgbm=logit(lgbm_df["prediction"].values),
         fastai=logit(fastai_df["prediction"].values),
         fastai_single=logit(fastai_df_single["prediction"].values),
         resnet=logit(resnet["Predicted"].values),
     )
 )
 
-predictions_df_valid = pd.concat([predictions_df_valid, valid_df], axis=1)
-
 y = valid_target.signal.values
 
 print(roc_auc_score(y, predictions_df_valid.fastai))
 
+# Ranks
+
+ranks = rank_mean(predictions_df_valid.values)
+
+print(
+    roc_auc_score(
+        y,
+        ranks
+    )
+)
+
+
+
+# AUC optimizer
+
 cv = StratifiedKFold(n_splits=4)
 
-logreg = LogisticRegression(penalty='l1', solver='liblinear')
+auc_optimizer = OptimizeAUC()
 
 cv_preds = cross_val_predict(
-    logreg,
+    auc_optimizer,
     predictions_df_valid,
     y,
     cv=cv,
     method='predict_proba'
 )
 
-
 print(
     roc_auc_score(
         y,
-        cv_preds[:, 1]
+        cv_preds
     )
 )
 
