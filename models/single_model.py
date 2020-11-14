@@ -88,7 +88,6 @@ train_dl = learn.dls.test_dl(X_train)
 train_ids = train_raw.iloc[X_train.index, :].Id
 
 n_cycles = 10
-start_cycle = 4
 n_epochs = 20
 
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy() * 0
