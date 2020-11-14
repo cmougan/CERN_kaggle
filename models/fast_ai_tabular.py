@@ -161,5 +161,5 @@ test_preds = test_preds / (n_cycles - start_cycle)
 
 test_raw['Predicted'] = test_preds
 
-# test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn.csv', index=False)
+test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn.csv', index=False)
 

@@ -142,7 +142,7 @@ test_predictions = lgb.predict_proba(X_test)[:, 1]
 
 test_raw['Predicted'] = test_predictions
 
-# test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm.csv', index=False)
+test_raw[['Id', 'Predicted']].to_csv('submissions/more_features_lgbm.csv', index=False)
 
 
 """
