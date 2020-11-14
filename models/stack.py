@@ -5,8 +5,6 @@ from sklearn.metrics import roc_auc_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 
-from lightgbm import LGBMClassifier
-
 random.seed(42)
 np.random.seed(42)
 
@@ -55,7 +53,6 @@ print(roc_auc_score(y, predictions_df_valid.fastai))
 cv = StratifiedKFold(n_splits=4)
 
 logreg = LogisticRegression(penalty='l1', solver='liblinear')
-# logreg = LGBMClassifier()
 
 cv_preds = cross_val_predict(
     logreg,
