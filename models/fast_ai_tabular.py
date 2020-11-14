@@ -13,6 +13,7 @@ from sklearn.preprocessing import QuantileTransformer
 
 from utils.features import feature_engineering, feature_engineering_cls
 from fastai.tabular.all import *
+from nnet import ReadDataset
 
 random.seed(42)
 np.random.seed(42)
@@ -43,6 +44,8 @@ full_df = pd.concat([all_df[keep_cols], transformed_df], axis=1)
 
 train = full_df[full_df.train == 1]
 test = full_df[full_df.train != 1]
+
+train = ReadDataset('train.csv')
 
 X_full = train.drop(columns=['train', 'Id', 'signal'])
 X_test = test.copy().drop(columns=['train', 'Id', 'signal'])
