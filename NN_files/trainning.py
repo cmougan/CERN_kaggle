@@ -25,10 +25,10 @@ def evaluate_auc(model, data, label):
 tic = time.time()
 
 # Read data
-train_file = "train_split.csv"
-validation_file = "valid_split.csv"
-trainset = ReadDataset(train_file, gradient_boosting_features=True)
-testset = ReadDataset(validation_file, gradient_boosting_features=True)
+train_file = "data/train_split.csv"
+validation_file = "data/valid_split.csv"
+trainset = ReadDataset(train_file)
+testset = ReadDataset(validation_file)
 
 # Data loaders
 trainloader = DataLoader(trainset, batch_size=100, shuffle=True)
@@ -67,7 +67,7 @@ auc_train = []
 auc_test = []
 
 # hyperparameteres
-n_epochs = 4
+n_epochs = 100
 
 for epoch in range(n_epochs):
     print(epoch)

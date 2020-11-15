@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from gauss_rank_scaler import GaussRankScaler
 from gbfeatures import GradientBoostingFeatureGenerator
 from sklearn.externals import joblib
 import random
@@ -53,7 +54,7 @@ class ReadDataset(Dataset):
 
         # If the scaler does not exist create it
         if os.path.isfile("output/scaler.save") == False:
-            self.scaler = MinMaxScaler()
+            self.scaler = GaussRankScaler()
             self.scaler = self.scaler.fit(self.X)
             ## Save scaler to be later used on the prediction
             joblib.dump(self.scaler, "output/scaler.save")
@@ -88,7 +89,7 @@ class ReadDataset(Dataset):
         y_fit = df[target]
 
         # Create features
-        X_fit= self.transform(X_fit)
+        X_fit = self.transform(X_fit)
         X_fit = self.feature_engineering(X_fit)
 
         # GB features
