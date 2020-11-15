@@ -5,13 +5,15 @@ from sklearn.metrics import roc_auc_score
 train_raw = pd.read_csv("data/train.csv").drop(columns="BUTTER")
 
 lgbm_df = pd.read_csv('data/blend/valid_lgbm.csv')
-fastai_df = pd.read_csv('data/blend/valid_fastai_nn.csv')
-fastai_df_single = pd.read_csv('data/blend/valid_fastai_nn_single.csv')
+fastai_df = pd.read_csv('data/blend/valid_fastai_nn_grt.csv')
+# fastai_df_q = pd.read_csv('data/blend/valid_fastai_nn.csv')
+fastai_df_single = pd.read_csv('data/blend/valid_fastai_nn_single_grt.csv')
+# fastai_df_single_q = pd.read_csv('data/blend/valid_fastai_nn_single.csv')
 resnet = pd.read_csv('data/blend/res1_valid_preds.csv')
 
 lgbm_submission = pd.read_csv("submissions/more_features_lgbm.csv")
-fastai_submission = pd.read_csv("submissions/fastai_nn.csv")
-fastai_submission_single = pd.read_csv("submissions/fastai_nn_single.csv")
+fastai_submission = pd.read_csv("submissions/fastai_nn_grt.csv")
+fastai_submission_single = pd.read_csv("submissions/fastai_nn_grt_single.csv")
 resnet_submission = pd.read_csv('submissions/resnet.csv')
 
 
@@ -64,6 +66,6 @@ blend_submission["Predicted"] = \
     (resnet_submission["Predicted"] ** (1 * optimal_nn_w / 3))
 
 blend_submission.to_csv(
-    "submissions/blend_lgbm_fastai_resnet_02_111.csv",
+    "submissions/blend_lgbm_fastai_resnet_02_111_grt.csv",
     index=False
 )

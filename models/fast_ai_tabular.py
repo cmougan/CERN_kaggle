@@ -9,9 +9,9 @@ import random
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import QuantileTransformer
+# from sklearn.preprocessing import QuantileTransformer
 
-from utils.features import feature_engineering, feature_engineering_cls
+from utils.features import feature_engineering, feature_engineering_cls, GaussRankScaler
 from fastai.tabular.all import *
 
 
@@ -30,17 +30,19 @@ all_df.columns = [col.replace(" ", "") for col in all_df.columns]
 all_df = feature_engineering_cls(all_df)
 all_df = feature_engineering(all_df)
 
-transformed_values = QuantileTransformer().fit_transform(all_df)
+keep_cols = ["Id", "signal", "train"]
+keep_df = all_df[keep_cols]
+all_df = all_df.drop(columns=keep_cols)
+
+transformed_values = GaussRankScaler(n_jobs=-1).fit_transform(all_df)
 transformed_df = pd.DataFrame(transformed_values)
 # transformed_df = all_df.copy()
+print("Here!")
 
-keep_cols = ["Id", "signal", "train"]
 transformed_df.columns = [col if col in keep_cols else f"{col}_q" for col in all_df.columns]
 
-transformed_df = transformed_df.drop(columns=keep_cols)
-
 # full_df = pd.concat([all_df, transformed_df], axis=1)
-full_df = pd.concat([all_df[keep_cols], transformed_df], axis=1)
+full_df = pd.concat([keep_df, transformed_df], axis=1)
 
 train = full_df[full_df.train == 1]
 test = full_df[full_df.train != 1]
@@ -101,10 +103,14 @@ for i in range(n_cycles):
     if i >= start_cycle:
 
         # Get valid predictions
-        valid_preds += learn.get_preds(dl=valid_dl)[0].numpy()
+        preds_single = learn.get_preds(dl=valid_dl)[0].numpy()
+        valid_preds += preds_single
 
         print(f"Validation AUC: {roc_auc_score(y_valid, valid_preds):.4f}")
+        print(f"Validation AUC single: {roc_auc_score(y_valid, preds_single):.4f}")
 
+
+valid_preds_single = preds_single
 valid_preds = valid_preds / (n_cycles - start_cycle)
 
 valid_scores = pd.DataFrame(dict(
@@ -112,21 +118,14 @@ valid_scores = pd.DataFrame(dict(
     prediction=valid_preds.ravel()
 ))
 
-valid_scores.to_csv('data/blend/valid_fastai_nn.csv', index=False)
-
-# Get train predictions
-
-train_preds = learn.get_preds(dl=train_dl)[0].numpy()
-
-train_scores = pd.DataFrame(dict(
-    Id=train_ids.values,
-    prediction=train_preds.ravel()
+valid_scores_single = pd.DataFrame(dict(
+    Id=valid_ids.values,
+    prediction=valid_preds_single.ravel()
 ))
 
-train_scores.to_csv('data/blend/train_fastai_nn.csv', index=False)
 
-print(f"Train AUC: {roc_auc_score(y_train, train_preds):.4f}")
-
+valid_scores.to_csv('data/blend/valid_fastai_nn_grt.csv', index=False)
+valid_scores_single.to_csv('data/blend/valid_fastai_nn_single_grt.csv', index=False)
 
 # Final train (all data)
 
@@ -157,9 +156,13 @@ for i in range(n_cycles):
         # Get valid predictions
         test_preds += learn_full.get_preds(dl=test_dl)[0].numpy()
 
+test_preds_single = learn_full.get_preds(dl=test_dl)[0].numpy()
 test_preds = test_preds / (n_cycles - start_cycle)
 
 test_raw['Predicted'] = test_preds
 
-test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn.csv', index=False)
+test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn_grt.csv', index=False)
 
+test_raw['Predicted'] = test_preds_single
+
+test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn_grt_single.csv', index=False)
