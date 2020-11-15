@@ -49,7 +49,7 @@ nnet60.load_state_dict(torch.load("output/weights60.pt"))
 ######################
 ####### Train ########
 ######################
-
+'''
 # Transform to tensor
 X_train = torch.tensor(dataset.X.values).to(device).float()
 y_train = torch.tensor(dataset.y.values).to(device).float()
@@ -92,7 +92,7 @@ train["Predicted60"] = nnet60.forward(X_train).detach().numpy()
 
 file_name = "submissions/valid_split_preds_average.csv"
 train[["Predicted40","Predicted50","Predicted60"]].to_csv(file_name)
-
+'''
 
 ########################
 #######   Test    #####

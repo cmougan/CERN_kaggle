@@ -25,7 +25,7 @@ class ReadDataset(Dataset):
             csv_file (str): Path to the csv file with the students data.
 
         """
-        self.df = pd.read_csv(csv_file).drop(columns="BUTTER")
+        self.df = pd.read_csv(csv_file)
         self.df.columns = self.df.columns.str.replace(" ", "")
 
         try:
@@ -34,6 +34,10 @@ class ReadDataset(Dataset):
             pass
         try:
             self.df = self.df.drop(columns=["Id"])
+        except Exception:
+            pass
+        try:
+            self.df = self.df.drop(columns=["BUTTER"])
         except Exception:
             pass
 
