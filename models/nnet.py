@@ -31,10 +31,7 @@ class ReadDataset(Dataset):
             self.df = self.df.drop(columns=["Unnamed:0"])
         except Exception:
             pass
-        try:
-            self.df = self.df.drop(columns=["Id"])
-        except Exception:
-            pass
+
 
         # Target
         self.target = "signal"
@@ -68,17 +65,13 @@ class ReadDataset(Dataset):
             self.X = self.gb_features()
         print("data size", self.X.shape)
 
-    def gb_features(self, sample_size=0.1):
+    def gb_features(self, sample_size=0.01):
         ## GB features
-        df = pd.read_csv("train.csv").drop(columns="BUTTER")
+        df = pd.read_csv("data/train.csv").drop(columns="BUTTER")
         df.columns = df.columns.str.replace(" ", "")
 
         try:
             df = df.drop(columns=["Unnamed:0"])
-        except Exception:
-            pass
-        try:
-            df = df.drop(columns=["Id"])
         except Exception:
             pass
 

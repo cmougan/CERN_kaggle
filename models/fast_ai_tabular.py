@@ -18,51 +18,17 @@ from nnet import ReadDataset
 random.seed(42)
 np.random.seed(42)
 
-train_raw = pd.read_csv("data/train.csv").drop(columns="BUTTER")
-test_raw = pd.read_csv("data/test.csv").drop(columns="BUTTER")
-
-train_raw['train'] = 1
-test_raw['train'] = 0
-
-all_df = pd.concat([train_raw, test_raw]).reset_index(drop=True)
-
-all_df.columns = [col.replace(" ", "") for col in all_df.columns]
-all_df = feature_engineering_cls(all_df)
-all_df = feature_engineering(all_df)
-
-transformed_values = QuantileTransformer().fit_transform(all_df)
-transformed_df = pd.DataFrame(transformed_values)
-# transformed_df = all_df.copy()
-
 keep_cols = ["Id", "signal", "train"]
-transformed_df.columns = [col if col in keep_cols else f"{col}_q" for col in all_df.columns]
 
-transformed_df = transformed_df.drop(columns=keep_cols)
+trainset = ReadDataset('data/train.csv', gradient_boosting_features=True)
+train = trainset.X
+train['signal'] = trainset.y
 
-# full_df = pd.concat([all_df, transformed_df], axis=1)
-full_df = pd.concat([all_df[keep_cols], transformed_df], axis=1)
+testset = ReadDataset('data/valid_split.csv', gradient_boosting_features=True)
+test = testset.X
 
-train = full_df[full_df.train == 1]
-test = full_df[full_df.train != 1]
-
-train = ReadDataset('train.csv')
-
-X_full = train.drop(columns=['train', 'Id', 'signal'])
-X_test = test.copy().drop(columns=['train', 'Id', 'signal'])
-y_full = train.signal
-
-# Carlos split's
-train_ids = pd.read_csv('data/train_split.csv')['Id'].values
-valid_ids = pd.read_csv('data/valid_split.csv')['Id'].values
-
-X_train = X_full[train['Id'].isin(train_ids)]
-y_train = y_full[train['Id'].isin(train_ids)]
-
-X_valid = X_full[train['Id'].isin(valid_ids)]
-y_valid = y_full[train['Id'].isin(valid_ids)]
-
-train = train.drop(columns=['train', 'Id'])
-test = test.drop(columns=['train', 'Id', 'signal'])
+print(train.shape)
+print(test.shape)
 
 
 
@@ -89,9 +55,9 @@ valid_ids = train_raw.iloc[X_valid.index, :].Id
 train_dl = learn.dls.test_dl(X_train)
 train_ids = train_raw.iloc[X_train.index, :].Id
 
-n_cycles = 10
+n_cycles = 1
 start_cycle = 4
-n_epochs = 20
+n_epochs = 2
 
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy() * 0
 
