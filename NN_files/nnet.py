@@ -67,7 +67,6 @@ class ReadDataset(Dataset):
         # Gradient boosting features
         if gradient_boosting_features:
             self.X = self.gb_features()
-        print("data size", self.X.shape)
 
     def gb_features(self, sample_size=0.1):
         ## GB features

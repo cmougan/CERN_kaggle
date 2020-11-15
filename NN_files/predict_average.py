@@ -10,29 +10,9 @@ import torch
 from datetime import date
 from nnet import ReadDataset, Net, ResNet
 
+def evaluate_auc(model, data, label):
 
-def average_NN(
-    data,
-    weights=[
-        "output/weights70.pt",
-        "output/weights80.pt",
-        "output/90.pt",
-        "output/weights_final.pt",
-    ],
-):
-    predicciones = []
-    for w in weights:
-        NNet = ResNet(data.shape[0]).to(device)
-        NNet.load_state_dict(torch.load(w))
-        predicciones.append(NNet.forward(X_train).detach().numpy())
-    return np.mean(predicciones, axis=1)
-
-
-def evaluate_auc(model, data, label, ensemble=False):
-    if ensemble:
-        pred = average_NN(data)
-    else:
-        pred = model(data.float()).detach().numpy()
+    pred = model(data.float()).detach().numpy()
     return roc_auc_score(label.detach().numpy(), pred)
 
 
@@ -48,58 +28,90 @@ def evaluate_log_loss(model, data, label, ensemble=False):
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Neural Network
-dataset = ReadDataset("train_split.csv")
+dataset = ReadDataset("data/train_split.csv")
+nnet = ResNet(dataset.__shape__()).to(device)
+weights_list = [
+        "output/weights40.pt",
+        "output/weights50.pt",
+        "output/weights60.pt",
+    ]
 
 
-# Train
-dataset = ReadDataset("train_split.csv")
+nnet40 = ResNet(dataset.__shape__()).to(device)
+nnet40.load_state_dict(torch.load("output/weights40.pt"))
+
+nnet50 = ResNet(dataset.__shape__()).to(device)
+nnet50.load_state_dict(torch.load("output/weights50.pt"))
+
+nnet60 = ResNet(dataset.__shape__()).to(device)
+nnet60.load_state_dict(torch.load("output/weights60.pt"))
+
+######################
+####### Train ########
+######################
+
 # Transform to tensor
 X_train = torch.tensor(dataset.X.values).to(device).float()
 y_train = torch.tensor(dataset.y.values).to(device).float()
 
 # Predictions
-print("Results in train AUC: ", evaluate_auc(nnet, X_train, y_train))
-print("Results in train BCE: ", evaluate_log_loss(nnet, X_train, y_train))
-print("Results in train AUC: ", evaluate_auc(nnet, X_train, y_train))
-print("Results in train BCE: ", evaluate_log_loss(nnet, X_train, y_train))
-train_out = average_NN(X_train)
+print("Results in train AUC 40: ", evaluate_auc(nnet40, X_train, y_train))
+print("Results in train AUC 50: ", evaluate_auc(nnet50, X_train, y_train))
+print("Results in train AUC 60: ", evaluate_auc(nnet60, X_train, y_train))
 
 # Store the predictions
-train = pd.read_csv("train_split.csv", index_col="Id")
-train["Predicted"] = train_out.detach().numpy()
-file_name = "submissions/train_split_preds.csv"
-train[["Predicted"]].to_csv(file_name)
+train = pd.read_csv("data/train_split.csv", index_col="Id")
 
-# Validation
-dataset = ReadDataset("validation.csv")
+train["Predicted40"] = nnet40.forward(X_train).detach().numpy()
+train["Predicted50"] = nnet50.forward(X_train).detach().numpy()
+train["Predicted60"] = nnet60.forward(X_train).detach().numpy()
+
+file_name = "submissions/train_split_preds_average.csv"
+train[["Predicted40","Predicted50","Predicted60"]].to_csv(file_name)
+
+########################
+####### Validation #####
+########################
+
+dataset = ReadDataset("data/valid_split.csv")
 # Transform to tensor
-X_val = torch.tensor(dataset.X.values).to(device).float()
-y_val = torch.tensor(dataset.y.values).to(device).float()
+X_train = torch.tensor(dataset.X.values).to(device).float()
+y_train = torch.tensor(dataset.y.values).to(device).float()
 
 # Predictions
-print("Results in validation AUC: ", evaluate_auc(nnet, X_val, y_val))
-print("Results in validation BCE: ", evaluate_log_loss(nnet, X_val, y_val))
-
-val_out = nnet.forward(X_val)
+print("Results in validation AUC 40: ", evaluate_auc(nnet40, X_train, y_train))
+print("Results in validation AUC 50: ", evaluate_auc(nnet50, X_train, y_train))
+print("Results in validation AUC 60: ", evaluate_auc(nnet60, X_train, y_train))
 
 # Store the predictions
-validation = pd.read_csv("validation.csv", index_col="Id")
-validation["Predicted"] = val_out.detach().numpy()
-file_name = "submissions/validation_preds.csv"
-validation[["Predicted"]].to_csv(file_name)
+train = pd.read_csv("data/valid_split.csv", index_col="Id")
 
-# Test
-test = ReadDataset("test.csv", for_test=True)
+train["Predicted40"] = nnet40.forward(X_train).detach().numpy()
+train["Predicted50"] = nnet50.forward(X_train).detach().numpy()
+train["Predicted60"] = nnet60.forward(X_train).detach().numpy()
+
+file_name = "submissions/valid_split_preds_average.csv"
+train[["Predicted40","Predicted50","Predicted60"]].to_csv(file_name)
+
+
+########################
+#######   Test    #####
+########################
+test = ReadDataset("data/test.csv", for_test=True)
 # Transform to tensor
 test = torch.tensor(test.X.values).to(device).float()
-test_out = nnet.forward(test)
+test_out40 = nnet40.forward(test).detach().numpy()
+test_out50 = nnet50.forward(test).detach().numpy()
+test_out60 = nnet60.forward(test).detach().numpy()
 
 
 # Store the predictions
-test = pd.read_csv("test.csv", index_col="Id")
-test["Predicted"] = test_out.detach().numpy()
+test = pd.read_csv("data/test.csv", index_col="Id")
+test["Predicted40"] = test_out40
+test["Predicted50"] = test_out50
+test["Predicted60"] = test_out60
 file_name = (
     "submissions/nn_" + str(date.today().month) + "_" + str(date.today().day) + ".csv"
 )
-test[["Predicted"]].to_csv(file_name)
+test[["Predicted40","Predicted50","Predicted60"]].to_csv(file_name)
 print("done")
