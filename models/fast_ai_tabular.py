@@ -6,6 +6,7 @@
 import pandas as pd
 import numpy as np
 import random
+from pathlib import Path
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
@@ -24,25 +25,34 @@ test_raw = pd.read_csv("data/test.csv").drop(columns="BUTTER")
 train_raw['train'] = 1
 test_raw['train'] = 0
 
-all_df = pd.concat([train_raw, test_raw]).reset_index(drop=True)
+full_file = Path("data/full.csv")
 
-all_df.columns = [col.replace(" ", "") for col in all_df.columns]
-all_df = feature_engineering_cls(all_df)
-all_df = feature_engineering(all_df)
+if full_file.exists():
 
-keep_cols = ["Id", "signal", "train"]
-keep_df = all_df[keep_cols]
-all_df = all_df.drop(columns=keep_cols)
+    full_df = pd.read_csv(full_file)
 
-transformed_values = GaussRankScaler(n_jobs=-1).fit_transform(all_df)
-transformed_df = pd.DataFrame(transformed_values)
-# transformed_df = all_df.copy()
-print("Here!")
+else:
 
-transformed_df.columns = [col if col in keep_cols else f"{col}_q" for col in all_df.columns]
+    all_df = pd.concat([train_raw, test_raw]).reset_index(drop=True)
 
-# full_df = pd.concat([all_df, transformed_df], axis=1)
-full_df = pd.concat([keep_df, transformed_df], axis=1)
+    all_df.columns = [col.replace(" ", "") for col in all_df.columns]
+    all_df = feature_engineering_cls(all_df)
+    all_df = feature_engineering(all_df)
+
+    keep_cols = ["Id", "signal", "train"]
+    keep_df = all_df[keep_cols]
+    all_df = all_df.drop(columns=keep_cols)
+
+    transformed_values = GaussRankScaler(n_jobs=-1).fit_transform(all_df)
+    transformed_df = pd.DataFrame(transformed_values)
+    # transformed_df = all_df.copy()
+
+    transformed_df.columns = [col if col in keep_cols else f"{col}_q" for col in all_df.columns]
+
+    # full_df = pd.concat([all_df, transformed_df], axis=1)
+    full_df = pd.concat([keep_df, transformed_df], axis=1)
+
+    full_df.to_csv(full_file, index=False)
 
 train = full_df[full_df.train == 1]
 test = full_df[full_df.train != 1]
@@ -89,25 +99,28 @@ valid_ids = train_raw.iloc[X_valid.index, :].Id
 train_dl = learn.dls.test_dl(X_train)
 train_ids = train_raw.iloc[X_train.index, :].Id
 
-n_cycles = 10
-start_cycle = 4
+n_cycles = 4
+start_cycle = 1
 n_epochs = 20
+lr_max = 0.005
 
 valid_preds = learn.get_preds(dl=valid_dl)[0].numpy() * 0
+
 
 for i in range(n_cycles):
     print("-" * 20)
     print(f"Cycle {i}")
-    learn.fit_one_cycle(n_epochs, lr_max=1e-3)
+    learn.fit_one_cycle(n_epochs, lr_max=lr_max)
+
+    preds_single = learn.get_preds(dl=valid_dl)[0].numpy()
+    print(f"Validation AUC single: {roc_auc_score(y_valid, preds_single):.4f}")
 
     if i >= start_cycle:
 
         # Get valid predictions
-        preds_single = learn.get_preds(dl=valid_dl)[0].numpy()
         valid_preds += preds_single
 
         print(f"Validation AUC: {roc_auc_score(y_valid, valid_preds):.4f}")
-        print(f"Validation AUC single: {roc_auc_score(y_valid, preds_single):.4f}")
 
 
 valid_preds_single = preds_single
@@ -124,8 +137,8 @@ valid_scores_single = pd.DataFrame(dict(
 ))
 
 
-valid_scores.to_csv('data/blend/valid_fastai_nn_grt.csv', index=False)
-valid_scores_single.to_csv('data/blend/valid_fastai_nn_single_grt.csv', index=False)
+valid_scores.to_csv('data/blend/valid_fastai_nn_grt_lr.csv', index=False)
+valid_scores_single.to_csv('data/blend/valid_fastai_nn_single_grt_lr.csv', index=False)
 
 # Final train (all data)
 
@@ -149,7 +162,7 @@ test_preds = learn_full.get_preds(dl=test_dl)[0].numpy() * 0
 
 for i in range(n_cycles):
     print(f"Cycle {i}")
-    learn_full.fit_one_cycle(n_epochs, lr_max=1e-3)
+    learn_full.fit_one_cycle(n_epochs, lr_max=lr_max)
 
     if i >= start_cycle:
 
@@ -161,8 +174,8 @@ test_preds = test_preds / (n_cycles - start_cycle)
 
 test_raw['Predicted'] = test_preds
 
-test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn_grt.csv', index=False)
+test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn_grt_lr.csv', index=False)
 
 test_raw['Predicted'] = test_preds_single
 
-test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn_grt_single.csv', index=False)
+test_raw[['Id', 'Predicted']].to_csv('submissions/fastai_nn_grt_single_lr.csv', index=False)

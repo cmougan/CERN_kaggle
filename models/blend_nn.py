@@ -4,17 +4,17 @@ from sklearn.metrics import roc_auc_score
 
 train_raw = pd.read_csv("data/train.csv").drop(columns="BUTTER")
 
-fastai_df = pd.read_csv('data/blend/valid_fastai_nn_grt.csv')
+fastai_df = pd.read_csv('data/blend/valid_fastai_nn_grt_lr.csv')
 fastai_df_q = pd.read_csv('data/blend/valid_fastai_nn.csv')
-fastai_df_single = pd.read_csv('data/blend/valid_fastai_nn_single_grt.csv')
+fastai_df_single = pd.read_csv('data/blend/valid_fastai_nn_single_grt_lr.csv')
 fastai_df_single_q = pd.read_csv('data/blend/valid_fastai_nn_single.csv')
 resnet = pd.read_csv('data/blend/res1_valid_preds.csv')
 resnet_gauss = pd.read_csv('data/blend/valid_gaussian_res.csv')
 
 
-fastai_submission = pd.read_csv("submissions/fastai_nn_grt.csv")
+fastai_submission = pd.read_csv("submissions/fastai_nn_grt_lr.csv")
 fastai_submission_q = pd.read_csv("submissions/fastai_nn.csv")
-fastai_submission_single = pd.read_csv("submissions/fastai_nn_grt_single.csv")
+fastai_submission_single = pd.read_csv("submissions/fastai_nn_grt_single_lr.csv")
 fastai_submission_single_q = pd.read_csv("submissions/fastai_nn_single.csv")
 resnet_submission = pd.read_csv('submissions/resnet.csv')
 resnet_gauss_submission = pd.read_csv('submissions/nn_11_15_average_nan.csv')
@@ -36,7 +36,7 @@ valid_target = train_raw.loc[:, ["Id", "signal"]]
 max_roc = 0
 optimal_w = 0
 
-w_grt = 1 / 3
+w_grt = 2 / 5
 w_rs_gauss = 1
 
 w_no_grt = ((1 - 2 * w_grt) / 2)
@@ -92,6 +92,6 @@ blend_submission["Predicted"] = \
 
 
 blend_submission.to_csv(
-    "submissions/blend_fastai_resnet_09.csv",
+    "submissions/blend_fastai_resnet_08.csv",
     index=False
 )
