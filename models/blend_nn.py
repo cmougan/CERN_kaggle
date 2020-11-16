@@ -37,7 +37,7 @@ max_roc = 0
 optimal_w = 0
 
 w_grt = 1 / 3
-w_rs_gauss = (8 / 8)
+w_rs_gauss = 1
 
 w_no_grt = ((1 - 2 * w_grt) / 2)
 w_rs_no_gauss = 1 - w_rs_gauss
@@ -91,7 +91,7 @@ blend_submission["Predicted"] = \
     (resnet_submission["Predicted"] ** (w_rs_no_gauss * w_resnet))
 
 
-# blend_submission.to_csv(
-#     "submissions/blend_fastai_resnet_415_2211.csv",
-#     index=False
-# )
+blend_submission.to_csv(
+    "submissions/blend_fastai_resnet_09.csv",
+    index=False
+)
