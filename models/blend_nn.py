@@ -9,7 +9,12 @@ fastai_df_q = pd.read_csv('data/blend/valid_fastai_nn.csv')
 fastai_df_single = pd.read_csv('data/blend/valid_fastai_nn_single_grt_lr.csv')
 fastai_df_single_q = pd.read_csv('data/blend/valid_fastai_nn_single.csv')
 resnet = pd.read_csv('data/blend/res1_valid_preds.csv')
-resnet_gauss = pd.read_csv('data/blend/valid_gaussian_res.csv')
+resnet_gauss = pd.read_csv('data/blend/valid_gaussian_res_no_aggregation.csv')
+
+resnet_gauss["Predicted"] = (resnet_gauss
+                              .filter(regex="^Pred")
+                              .mean(axis=1)
+                              )
 
 
 fastai_submission = pd.read_csv("submissions/fastai_nn_grt_lr.csv")
@@ -17,7 +22,12 @@ fastai_submission_q = pd.read_csv("submissions/fastai_nn.csv")
 fastai_submission_single = pd.read_csv("submissions/fastai_nn_grt_single_lr.csv")
 fastai_submission_single_q = pd.read_csv("submissions/fastai_nn_single.csv")
 resnet_submission = pd.read_csv('submissions/resnet.csv')
-resnet_gauss_submission = pd.read_csv('submissions/nn_11_15_average_nan.csv')
+resnet_gauss_submission = pd.read_csv('submissions/nn_11_17.csv')
+
+resnet_gauss_submission["Predicted"] = (resnet_gauss_submission
+                                        .filter(regex="^Pred")
+                                        .mean(axis=1)
+                                        )
 
 resnet_gauss_submission["Predicted"] = (
     resnet_gauss_submission["Predicted"] \
@@ -92,6 +102,6 @@ blend_submission["Predicted"] = \
 
 
 blend_submission.to_csv(
-    "submissions/blend_fastai_resnet_08.csv",
+    "submissions/blend_fastai_resnet_14.csv",
     index=False
 )
