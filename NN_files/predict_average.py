@@ -10,6 +10,7 @@ import torch
 from datetime import date
 from nnet import ReadDataset, Net, ResNet
 
+
 def evaluate_auc(model, data, label):
 
     pred = model(data.float()).detach().numpy()
@@ -31,10 +32,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 dataset = ReadDataset("data/train_split.csv")
 nnet = ResNet(dataset.__shape__()).to(device)
 weights_list = [
-        "output/weights40.pt",
-        "output/weights50.pt",
-        "output/weights60.pt",
-    ]
+    "output/weights40.pt",
+    "output/weights50.pt",
+    "output/weights60.pt",
+]
 
 
 nnet40 = ResNet(dataset.__shape__()).to(device)
@@ -49,7 +50,7 @@ nnet60.load_state_dict(torch.load("output/weights60.pt"))
 ######################
 ####### Train ########
 ######################
-'''
+"""
 # Transform to tensor
 X_train = torch.tensor(dataset.X.values).to(device).float()
 y_train = torch.tensor(dataset.y.values).to(device).float()
@@ -92,7 +93,7 @@ train["Predicted60"] = nnet60.forward(X_train).detach().numpy()
 
 file_name = "submissions/valid_split_preds_average.csv"
 train[["Predicted40","Predicted50","Predicted60"]].to_csv(file_name)
-'''
+"""
 
 ########################
 #######   Test    #####
@@ -113,5 +114,5 @@ test["Predicted60"] = test_out60
 file_name = (
     "submissions/nn_" + str(date.today().month) + "_" + str(date.today().day) + ".csv"
 )
-test[["Predicted40","Predicted50","Predicted60"]].to_csv(file_name)
+test[["Predicted40", "Predicted50", "Predicted60"]].to_csv(file_name)
 print("done")

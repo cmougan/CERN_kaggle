@@ -27,7 +27,7 @@ dataset = ReadDataset("data/train_split.csv")
 nnet = ResNet(dataset.__shape__()).to(device)
 nnet.load_state_dict(torch.load("output/weights80.pt"))
 
-'''
+"""
 # Train
 dataset = ReadDataset("data/train_split.csv")
 # Transform to tensor
@@ -44,7 +44,7 @@ train = pd.read_csv("data/train_split.csv", index_col="Id")
 train["Predicted"] = train_out.detach().numpy()
 file_name = "submissions/train_split_preds.csv"
 train[["Predicted"]].to_csv(file_name)
-'''
+"""
 # Validation
 dataset = ReadDataset("data/valid_split.csv")
 # Transform to tensor
@@ -53,7 +53,7 @@ y_val = torch.tensor(dataset.y.values).to(device).float()
 
 # Predictions
 print("Results in validation AUC: ", evaluate_auc(nnet, X_val, y_val))
-'''
+"""
 print("Results in validation BCE: ", evaluate_log_loss(nnet, X_val, y_val))
 
 val_out = nnet.forward(X_val)
@@ -79,4 +79,4 @@ file_name = (
 )
 test[["Predicted"]].to_csv(file_name)
 print("done")
-'''
+"""
